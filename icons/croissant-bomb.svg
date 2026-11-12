@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -30 200 200">
+  <rect x="0" y="-30" width="200" height="200" rx="38" fill="#24100c"/>
+  <g stroke="#6b3110" stroke-width="4">
+    <ellipse cx="22" cy="122" rx="10" ry="15" transform="rotate(-70 22 122)" fill="#b8681f"/>
+    <ellipse cx="178" cy="122" rx="10" ry="15" transform="rotate(70 178 122)" fill="#b8681f"/>
+    <ellipse cx="40" cy="104" rx="17" ry="25" transform="rotate(-52 40 104)" fill="#e59a2f"/>
+    <ellipse cx="160" cy="104" rx="17" ry="25" transform="rotate(52 160 104)" fill="#e59a2f"/>
+    <ellipse cx="68" cy="84" rx="24" ry="33" transform="rotate(-30 68 84)" fill="#f0b53c"/>
+    <ellipse cx="132" cy="84" rx="24" ry="33" transform="rotate(30 132 84)" fill="#f0b53c"/>
+    <ellipse cx="100" cy="72" rx="30" ry="40" fill="#ffd77a"/>
+  </g>
+  <polygon transform="translate(100 76) scale(15)" fill="#de2910" points="0,-1 0.2245,-0.309 0.951,-0.309 0.3633,0.118 0.5878,0.809 0,0.382 -0.5878,0.809 -0.3633,0.118 -0.951,-0.309 -0.2245,-0.309"/>
+  <g transform="rotate(-7 100 30)" stroke="#2c3614" stroke-width="4" stroke-linejoin="round">
+    <path d="M62 34 C58 22 60 8 76 5 C88 2 112 2 124 5 C140 8 142 22 138 34 Z" fill="#6f8040"/>
+    <path d="M62 30 Q100 36 138 30 L137 39 Q100 45 63 39 Z" fill="#5a6a30"/>
+    <path d="M63 39 Q100 54 137 39 Q100 46 63 39 Z" fill="#46531f"/>
+    <polygon transform="translate(100 17) scale(9)" fill="#de2910" stroke="none" points="0,-1 0.2245,-0.309 0.951,-0.309 0.3633,0.118 0.5878,0.809 0,0.382 -0.5878,0.809 -0.3633,0.118 -0.951,-0.309 -0.2245,-0.309"/>
+  </g>
+</svg>

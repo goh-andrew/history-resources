@@ -1,5 +1,6 @@
 <meta charset="utf-8">
 <title>Deng Croissant Bomb</title>
+<link rel="icon" type="image/svg+xml" href="icons/croissant-bomb.svg">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -118,8 +119,6 @@ button { cursor: pointer; }
 .bun-wrap svg { width: 100%; height: auto; display: block; overflow: visible; }
 .holder { font-family: var(--display); font-size: clamp(18px, 4vw, 24px); text-align: center; }
 .holder em { font-style: normal; color: var(--butter); }
-.spark { transform-origin: 126px 4px; animation: spark .18s steps(2) infinite; }
-@keyframes spark { 50% { transform: scale(1.35) rotate(20deg); } }
 
 .answer { display: flex; gap: 8px; }
 .answer input { flex: 1; min-width: 0; background: var(--tray-2); border: 2px solid var(--tray-2); border-radius: 14px; padding: 14px 16px; font-size: 18px; }
@@ -198,7 +197,7 @@ button { cursor: pointer; }
   .hero-bun { justify-self: center; grid-row: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .spark, .card, .shake, .quake, .flash, .pennant, .wave { animation: none !important; }
+  .card, .shake, .quake, .flash, .pennant, .wave { animation: none !important; }
 }
 </style>
 
@@ -236,6 +235,15 @@ button { cursor: pointer; }
     <symbol id="star" viewBox="-1 -1 2 2">
       <polygon points="0,-1 0.2245,-0.309 0.951,-0.309 0.3633,0.118 0.5878,0.809 0,0.382 -0.5878,0.809 -0.3633,0.118 -0.951,-0.309 -0.2245,-0.309"/>
     </symbol>
+    <symbol id="cap" viewBox="0 0 200 140">
+      <g transform="rotate(-7 100 30)" stroke="#2c3614" stroke-width="2.5" stroke-linejoin="round">
+        <path d="M62 34 C58 22 60 8 76 5 C88 2 112 2 124 5 C140 8 142 22 138 34 Z" fill="#6f8040"/>
+        <path d="M66 21 Q100 29 134 21" fill="none" stroke-width="1.6" opacity=".6"/>
+        <path d="M62 30 Q100 36 138 30 L137 39 Q100 45 63 39 Z" fill="#5a6a30"/>
+        <path d="M63 39 Q100 54 137 39 Q100 46 63 39 Z" fill="#46531f"/>
+        <use href="#star" x="93" y="10" width="14" height="14" fill="#de2910" stroke="none"/>
+      </g>
+    </symbol>
     <mask id="sickleCut" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">
       <circle cx="29" cy="31" r="21" fill="#fff"/>
       <circle cx="34" cy="26" r="17" fill="#000"/>
@@ -264,20 +272,19 @@ button { cursor: pointer; }
         <div class="pole l" data-pole></div>
         <div class="pole r" data-pole></div>
         <svg class="hero-bun" viewBox="0 -20 200 160" aria-hidden="true">
-          <path d="M100 34 C104 18 120 14 126 4" fill="none" stroke="#3b2418" stroke-width="4" stroke-linecap="round"/>
           <use href="#cro"/>
           <use href="#star" x="88" y="62" width="24" height="24" fill="#de2910"/>
-          <g class="spark"><circle cx="126" cy="4" r="6" fill="#ffe27a"/><circle cx="126" cy="4" r="3" fill="#fff"/></g>
+          <use href="#cap"/>
         </svg>
       </div>
-      <p>Pass the croissant round one device, or open an online room so everyone plays on their own. Give a piece of evidence that hasn't been said yet, then hand it on. The fuse is hidden. Whoever's holding it when it goes off loses a life.</p>
+      <p>Open an online room so everyone plays on their own device, or pass the croissant round one device. Give a piece of evidence that hasn't been said yet, then hand it on. The fuse is hidden. Whoever's holding it when it goes off loses a life.</p>
     </header>
 
     <div class="panel" id="modePanel">
       <h2>How are you playing?</h2>
       <div class="seg" role="radiogroup" aria-label="Play mode">
-        <label><input type="radio" name="mode" value="local" checked><span>One device<small>pass it round</small></span></label>
-        <label><input type="radio" name="mode" value="online"><span>Online room<small>everyone on their own device</small></span></label>
+        <label><input type="radio" name="mode" value="online" checked><span>Online room<small>everyone on their own device</small></span></label>
+        <label><input type="radio" name="mode" value="local"><span>One device<small>pass it round</small></span></label>
       </div>
     </div>
 
@@ -365,10 +372,9 @@ button { cursor: pointer; }
       <div class="poles" aria-hidden="true"><div class="pole l" data-pole></div><div class="pole r" data-pole></div></div>
       <div class="bun-wrap" id="bun">
         <svg viewBox="0 -20 200 160" aria-hidden="true">
-          <path d="M100 34 C104 18 120 14 126 4" fill="none" stroke="#3b2418" stroke-width="4" stroke-linecap="round"/>
           <use href="#cro"/>
           <use href="#star" x="88" y="62" width="24" height="24" fill="#de2910"/>
-          <g class="spark"><circle cx="126" cy="4" r="6" fill="#ffe27a"/><circle cx="126" cy="4" r="3" fill="#fff"/></g>
+          <use href="#cap"/>
         </svg>
       </div>
       <div class="holder" id="holder" aria-live="polite"></div>
@@ -420,22 +426,65 @@ button { cursor: pointer; }
    lower-cased answer. The highest-scoring unused match wins.            */
 const all = (...w) => new RegExp('^' + w.map(x => '(?=.*(?:' + x + '))').join(''));
 const TOPICS = [
+  { id: 'g4rise', short: 'Rise of the Gang of Four', q: 'How did the Gang of Four rise to power?', a: [
+    { t: 'Mao personally backed them as his allies against the Party establishment', p: 3, m: [/personal (support|backing|endorse)|endors|empower|allies|mao.*(support|back|chose|protect|trust)/] },
+    { t: 'In May 1966 Mao set up the Central Cultural Revolution Group (CCRG) to bypass the Politburo', p: 5, m: [/ccrg|cultural revolution group|may 1966/] },
+    { t: 'Jiang Qing, Mao\'s wife, led the CCRG', p: 5, m: [/jiang qing|wife|madame mao/] },
+    { t: 'Zhang Chunqiao and Yao Wenyuan were key members', p: 5, m: [/zhang chun ?qiao|yao wen ?yuan/] },
+    { t: 'Wang Hongwen was made Vice-Chairman, third in the Party (1973)', p: 5, m: [/wang hong ?wen|vice.?chair|third in/] },
+    { t: 'They all joined the Politburo in 1973', p: 5, m: [/politburo|\b1973\b/] },
+    { t: 'They bypassed the established Party leadership', p: 3, m: [/bypass|established|party leadership/] },
+    { t: 'They controlled the media, propaganda and culture', p: 3, m: [/media|propaganda|newspapers?|\bpress\b|culture|\barts?\b/] },
+    { t: 'Jiang Qing\'s "Eight Model Operas" were the only culture allowed for a decade', p: 5, m: [/model operas?|eight operas|\b8 (model )?operas/] },
+    { t: 'They banned almost all pre-revolutionary art, opera and film', p: 3, m: [/\bbann|censor/] },
+    { t: 'Branding old culture "bourgeois" or "feudal" let the Red Guards attack it', p: 3, m: [/bourgeois|feudal|red guards?|four olds/] },
+    { t: 'Their power base was in Shanghai (the 1967 "January Storm")', p: 5, m: [/shanghai|january storm/] },
+    { t: 'Lin Biao\'s fall in 1971 removed a rival', p: 5, m: [/lin ?biao|\b1971\b/] },
+    { t: 'Mao\'s failing health let them act in his name', p: 3, m: [/health|\bill\b|illness|sick|old age|parkinson|dying/] },
+    { t: 'They attacked moderates like Zhou Enlai ("Criticise Lin, Criticise Confucius", 1974)', p: 5, m: [/confucius|pi lin|criticise lin|zhou ?en ?lai/] },
+    { t: 'They were radical, ultra-left Maoists', p: 1, m: [/radical|ultra.?left|left.?wing|extreme/] },
+    { t: 'The Cultural Revolution (1966) gave them a platform', p: 1, m: [/cultural revolution|\bcr\b|\b1966\b/] },
+  ]},
+  { id: 'g4fall', short: 'Fall of the Gang of Four', q: 'Why did the Gang of Four fall from power in 1976?', a: [
+    { t: 'Mao died in September 1976, so they lost their only protector', p: 3, m: [all('\\bmao\\b', 'die|death|dead|protect')] },
+    { t: 'They had no power base in the army or the state bureaucracy', p: 3, m: [/power base|no (real )?(support|backing|base)|bureaucra/] },
+    { t: 'Mao chose Hua Guofeng, not one of the Gang, as his successor', p: 5, m: [/\bhua\b|guofeng/] },
+    { t: 'Hua saw the Gang as a threat to his authority', p: 3, m: [/threat|rival/] },
+    { t: 'Ye Jianying and the PLA carried out the arrests', p: 5, m: [/ye ?jian ?ying/] },
+    { t: 'They had purged senior army commanders in the Cultural Revolution, so the military despised them', p: 3, m: [/\b(pla|army|military|generals?|commanders?)\b/] },
+    { t: 'They were accused of forging Mao\'s "last testament"', p: 5, m: [/forg|testament|last (will|words|instructions?)/] },
+    { t: 'They tried to mobilise the Shanghai militia', p: 5, m: [/shanghai|militia/] },
+    { t: 'They were blamed for the "ten lost years" and were widely hated', p: 3, m: [/unpopular|hated|blamed|ten lost years|cultural revolution/] },
+    { t: 'They had persecuted popular leaders like Zhou Enlai and Deng Xiaoping', p: 3, m: [/zhou ?en ?lai|persecut|\bdeng\b/] },
+    { t: 'They persecuted 750,000 people, about 35,000 of whom died', p: 5, m: [/\b750\b|750,?000|35,?000/] },
+    { t: 'The Tiananmen Incident (April 1976) showed public anger at the radicals', p: 5, m: [/tiananmen|qingming|april 1976/] },
+    { t: 'They were arrested on 6 October 1976', p: 5, m: [/october|6 oct/] },
+    { t: 'Their fall was met with huge public celebrations', p: 3, m: [/celebrat/] },
+    { t: 'Mao himself had criticised them in 1974–75', p: 5, m: [/\b197[45]\b|mao (had )?criticis/] },
+  ]},
   { id: 'rise', short: 'Rise of Deng', q: 'Why was Deng able to take power after Mao died (1976–78)?', a: [
     { t: 'Mao died in September 1976, leaving a power vacuum', p: 1, m: [all('\\bmao\\b', 'die|death|dead')] },
     { t: 'The Gang of Four were arrested in October 1976', p: 3, m: [/gang of (four|4)|\bg4\b|jiang qing/] },
     { t: 'Ye Jianying and the PLA backed Deng', p: 5, m: [/ye ?jian ?ying/] },
     { t: 'Support from the army and the Party "old guard"', p: 3, m: [/\b(pla|army|military|old guard|generals?)\b/] },
     { t: 'He was a respected Long March veteran', p: 3, m: [/long march|veteran/] },
-    { t: 'Tiananmen Incident, April 1976: mourning Zhou Enlai became a protest against the radicals', p: 5, m: [/tiananmen incident|qingming|april 1976|zhou ?en ?lai/] },
+    { t: 'Tiananmen Incident, April 1976: mourning Zhou Enlai became a protest against the radicals', p: 5, m: [/tiananmen incident|qingming|april 1976/, all('zhou ?en ?lai', 'mourn|death|died|protest|memor|tiananmen|april')] },
     { t: 'Hua Guofeng\'s "Two Whatevers" was a dead end that blocked reform', p: 5, m: [/whatever/] },
     { t: 'He outmanoeuvred Mao\'s chosen successor, Hua Guofeng', p: 3, m: [/\bhua\b|guofeng/] },
     { t: 'He was reinstated to his posts in July 1977', p: 5, m: [/july 1977/] },
+    { t: 'Zhou Enlai had brought him back as Vice-Premier in 1973', p: 5, m: [/\b1973\b|vice.?premier/] },
+    { t: 'Hua Guofeng was little known and had a weak power base', p: 3, m: [all('\\bhua\\b|guofeng', 'weak|unknown|little.?known|inexperienc|power base|support')] },
+    { t: 'The May 1978 article "Practice is the sole criterion of truth" undermined Hua', p: 5, m: [/sole criterion|practice is/] },
     { t: 'He was rehabilitated and returned to his posts', p: 3, m: [/reinstat|rehabilit|restored|brought back/] },
-    { t: 'Third Plenum of the 11th Central Committee, December 1978', p: 5, m: [/(third|3rd) plenum|\bplenum\b|11th central committee|december 1978/] },
+    { t: 'Third Plenum of the 11th Central Committee, December 1978, adopted "reform and opening up"', p: 5, m: [/(third|3rd) plenum|\bplenum\b|11th central committee|december 1978|reform and open/] },
     { t: 'GDP per capita was only $156 in 1978', p: 5, m: [/\b156(?!\d)/] },
     { t: 'Over 80% of people lived in extreme poverty', p: 5, m: [/\b80\b|eighty/] },
+    { t: 'Industrial production fell 13% in the Cultural Revolution; coal fell from 260m to 206m tonnes', p: 5, m: [all('\\b13\\b|thirteen', 'industr|production|output|fell|declin|drop'), /\b260\b|\b206\b|\b13\.9\b/] },
+    { t: 'The economy had stagnated', p: 1, m: [/stagnat|economy (was )?(weak|bad|failing|struggling)/] },
     { t: 'His pragmatism: "Seek truth from facts"', p: 5, m: [/seek(ing)? truth|truth from facts/] },
-    { t: 'His pragmatic reforms had worked after the Great Leap Forward', p: 3, m: [/great leap|\bglf\b|pragmat/] },
+    { t: 'His practical, results-first approach was the opposite of the Cultural Revolution\'s ideology', p: 3, m: [/pragmat|practical|realistic|what works|ideolog/] },
+    { t: 'His reforms had worked after the Great Leap Forward', p: 3, m: [/great leap|\bglf\b/] },
+    { t: 'The Gang of Four were hated for the "ten lost years"; their fall was celebrated', p: 3, m: [all('gang|\\bg4\\b', 'unpopular|hated|blamed|celebrat')] },
     { t: 'The Cultural Revolution had failed (the "ten lost years")', p: 1, m: [/cultural revolution|ten lost years|\bcr\b/] },
   ]},
   { id: 'need', short: 'Need for reform', q: 'What evidence shows China\'s economy needed reform by 1978?', a: [
@@ -444,44 +493,66 @@ const TOPICS = [
     { t: 'The people\'s communes destroyed any incentive to work', p: 3, m: [/commune|incentive/] },
     { t: 'The "iron rice bowl" made state enterprises unprofitable', p: 5, m: [/iron rice bowl/] },
     { t: 'State-owned enterprises were inefficient and technologically backward', p: 3, m: [/state.?owned|\bsoes?\b|backward|inefficien|technolog/] },
-    { t: 'Universities were shut and the gaokao scrapped in the Cultural Revolution, so there was no skilled workforce', p: 3, m: [/universit|gaokao|intellectual|stinking|skilled|education/] },
+    { t: 'Industrial production fell 13% in the Cultural Revolution; coal fell from 260m to 206m tonnes', p: 5, m: [all('\\b13\\b|thirteen', 'industr|production|output|fell|declin|drop'), /\b260\b|\b206\b|\b13\.9\b/] },
+    { t: 'Coal, oil and steel output all fell', p: 3, m: [/\bcoal\b|\boil\b|\bsteel\b/] },
+    { t: 'The economy had stagnated', p: 1, m: [/stagnat|economy (was )?(weak|bad|failing|struggling)/] },
+    { t: '130 million students missed school when it closed in the Cultural Revolution', p: 5, m: [/\b130\b/] },
+    { t: 'Universities were shut and the gaokao scrapped in the Cultural Revolution, so there was no skilled workforce', p: 3, m: [/universit|gaokao|intellectual|stinking|skilled|education|lost generation/] },
     { t: 'Mao\'s "self-reliance" cut China off from foreign technology', p: 3, m: [/self.?relian|isolat|foreign tech/] },
     { t: 'Population boom: 540 million (1949) to nearly 1 billion', p: 3, m: [/\b540(?!\d)|billion|population/] },
     { t: 'Food shortages', p: 1, m: [/food|shortage|hunger|grain|starv/] },
     { t: 'Most people were very poor', p: 1, m: [/\bpoor\b|poverty/] },
     { t: 'Chaos of the Cultural Revolution', p: 1, m: [/cultural revolution|ten lost years|chaos/] },
     { t: 'Long-term damage from the Great Leap Forward famine', p: 1, m: [/great leap|\bglf\b|famine/] },
+    { t: 'Hua\'s over-ambitious Ten-Year Plan (1978) relied on heavy industry and costly imports', p: 5, m: [/ten.?year plan|10.?year plan/] },
   ]},
   { id: 'agri', short: 'Agriculture', q: 'Give evidence about Deng\'s changes to agriculture.', a: [
     { t: 'The Household Responsibility System', p: 5, m: [/household responsib|responsibility system|\bhrs\b/] },
+    { t: 'It began with farmers in Xiaogang village, Anhui (1978)', p: 5, m: [/anhui|xiaogang|sichuan/] },
+    { t: 'The communes were abolished by 1983–84', p: 5, m: [all('commune', 'abolish|dismantl|scrapp|ended|\\b198[34]\\b')] },
     { t: 'The communes were broken up', p: 3, m: [/commune/] },
     { t: 'Families farmed their own plots of land', p: 3, m: [/plot|individual farm|own land|family farm/] },
     { t: 'Farmers sold a fixed quota to the state first', p: 5, m: [/quota/] },
     { t: 'Farmers sold their surplus at local markets for profit', p: 3, m: [/surplus|sell|sold|market|profit/] },
     { t: 'The land was still owned by the state and leased to farmers', p: 3, m: [/lease|rent|still own|state own|owned by/] },
-    { t: 'Grain output rose from about 305m tonnes (1978) to 407m tonnes (1984)', p: 5, m: [/\b30[45](?!\d)|\b407(?!\d)/] },
+    { t: 'Land was leased to families for 15 years', p: 5, m: [/\b15 years|fifteen years/] },
+    { t: 'Peasants could choose what to grow', p: 3, m: [/choose what|what to grow|choose (their |which )?crops?|decide what/] },
+    { t: 'Grain output rose from about 305m tonnes (1978) to 407m tonnes', p: 5, m: [/\b30[45](?!\d)|\b407(?!\d)/] },
     { t: 'Grain production rose sharply', p: 3, m: [/grain|output|production|harvest/] },
+    { t: 'Meat production roughly tripled, from about 8.5m to 25m tonnes', p: 5, m: [all('meat|pork', '\\b8(\\.\\d)?\\b|\\b2[3-6]\\b|tripl|three times')] },
+    { t: 'Meat production rose', p: 3, m: [/\bmeat\b|pork|livestock/] },
     { t: 'Township and Village Enterprises (TVEs)', p: 5, m: [/township|village enterprise|\btves?\b/] },
     { t: 'It built on Deng and Liu Shaoqi\'s reforms after the Great Leap Forward in the 1960s', p: 3, m: [/\bliu\b|shaoqi|1960s|great leap|\bglf\b/] },
     { t: 'Rural incomes and living standards rose', p: 3, m: [/income|richer|wealth|living standard/] },
     { t: 'Incentives: more work meant more money', p: 1, m: [/incentive|more money|more work|motivat/] },
   ]},
-  { id: 'open', short: 'Industry & Open Door', q: 'Give evidence about Deng\'s industrial reforms and the Open Door Policy.', a: [
+  { id: 'open', short: 'Industry, education & Open Door', q: 'Give evidence about Deng\'s reforms to industry and education, and the Open Door Policy.', a: [
     { t: 'Special Economic Zones (SEZs) were set up in 1980', p: 3, m: [/special economic|\bsezs?\b/] },
     { t: 'Shenzhen, the first and most famous SEZ', p: 5, m: [/shen ?zhen/] },
     { t: 'The other SEZs: Zhuhai, Shantou and Xiamen', p: 5, m: [/zhuhai|shantou|xiamen|amoy/] },
     { t: '14 coastal cities were opened to foreign investment in 1984', p: 5, m: [/\b14\b|fourteen|coastal cit/] },
     { t: 'The Open Door Policy rejected Mao\'s self-reliance', p: 3, m: [/open door|opening up|reform and open|self.?relian/] },
+    { t: 'Foreign investment rose from almost $0 (1978) to $3.7 billion (1985)', p: 5, m: [/\b3\.7\b|3,?700 million/] },
+    { t: 'Exports grew by 500%', p: 5, m: [/\b500\b|five.?fold|\b5x\b/] },
+    { t: 'GDP grew about 10% a year', p: 5, m: [all('\\b10\\b|\\bten\\b|double.?digit', 'growth|gdp|grew|annual|a year|per year|economy')] },
     { t: 'It attracted foreign investment and technology', p: 3, m: [/invest|foreign (tech|compan|capital)/] },
+    { t: 'A new middle class of managers, engineers and businesspeople', p: 3, m: [/middle class|managers|business ?(people|men|women)/] },
+    { t: 'Consumer goods and Western brands became available', p: 3, m: [/consumer|brands?\b|luxury|gucci|fashion/] },
+    { t: '1 million technical students trained as managers, engineers and technicians', p: 5, m: [/\b1 million|one million|technical (students?|education|training)/] },
+    { t: 'Thousands of students were sent to study in the West', p: 3, m: [/abroad|overseas|stud(y|ied|ying) in the west|sent (to|students to) the west|western universit/] },
+    { t: 'Universities and research institutes reopened after the Cultural Revolution', p: 3, m: [/research|universit|reopen|schools?\b|teachers?|curriculum/] },
     { t: 'All four modernisations: agriculture, industry, defence, science & technology', p: 5, m: [all('agricult', 'industr', 'defen[cs]e', 'scien')] },
     { t: 'The Four Modernisations', p: 3, m: [/four moderni[sz]ation|4 moderni/] },
     { t: 'Goal: quadruple GDP per capita by 2000', p: 5, m: [/quadruple|\b2000\b|four times/] },
     { t: 'Performance bonuses replaced the "iron rice bowl"', p: 3, m: [/bonus|performance|iron rice bowl/] },
-    { t: 'Private businesses and competition were allowed', p: 3, m: [/private|competition|monopoly|entrepreneur|getihu/] },
+    { t: 'Private businesses and competition were allowed', p: 3, m: [/private|privati[sz]|competition|monopoly|entrepreneur|getihu|market incentive/] },
     { t: 'The gaokao was brought back in 1977 to train a skilled workforce', p: 5, m: [/gaokao|entrance exam/] },
     { t: '"It doesn\'t matter if a cat is black or white, as long as it catches mice"', p: 5, m: [/\bcats?\b|mice/] },
     { t: '"To get rich is glorious" (a slogan linked to Deng)', p: 5, m: [/get rich|glorious/] },
     { t: 'The focus shifted from "class struggle" to "socialist modernisation"', p: 3, m: [/class struggle|socialist moderni/] },
+    { t: '"Socialism with Chinese characteristics"', p: 5, m: [/chinese characteristics/] },
+    { t: 'Joint ventures with foreign companies', p: 5, m: [/joint ventures?/] },
+    { t: 'SEZs were placed near Hong Kong, Macau and Taiwan to draw their investment', p: 3, m: [/hong ?kong|macau|macao|taiwan/] },
   ]},
   { id: 'ocp', short: 'One Child Policy', q: 'Why was the One Child Policy introduced?', a: [
     { t: 'Population grew from 540 million (1949) to about 1 billion (1980)', p: 5, m: [/\b540(?!\d)/] },
@@ -494,27 +565,52 @@ const TOPICS = [
     { t: 'The Four Modernisations needed wealth per head to rise', p: 3, m: [/four moderni|per capita|per head/] },
     { t: 'A Malthusian fear of population outgrowing resources', p: 5, m: [/malthus/] },
     { t: 'Worry about feeding, housing and employing everyone', p: 3, m: [/food|feed|housing|jobs|employ|resources/] },
+    { t: 'Mao\'s pro-birth policies had encouraged large families', p: 3, m: [/pro.?birth|large famil|encourag\w* (people to have |more )?(children|births|babies)|mao.*(children|births|babies)/] },
+    { t: 'Economic gains would be "eaten up" by new births', p: 3, m: [/eaten|eat up|cancel(led)? out|wipe(d)? out|swallow/] },
     { t: 'The earlier voluntary "Later, longer, fewer" campaign was too slow', p: 5, m: [/later.*longer|longer.*fewer|voluntary|wan xi shao/] },
     { t: 'Introduced 1979–80', p: 3, m: [/\b19(79|80)\b/] },
+    { t: 'The 1980 Marriage Law raised the marriage age to delay births', p: 5, m: [/marriage (law|age)|late marriage|marry later/] },
     { t: 'The population was growing too fast', p: 1, m: [/population|overpopul|too many people|grow/] },
+  ]},
+  { id: 'ocpfx', short: 'One Child Policy in practice', q: 'How was the One Child Policy enforced, and what were its effects?', a: [
+    { t: 'Fines for couples who had more than one child', p: 3, m: [/\bfines?d?\b|penalt/] },
+    { t: 'Rewards like bonuses and better housing for one-child families', p: 3, m: [/reward|bonus|benefit|certificate|incentive|housing/] },
+    { t: 'Forced sterilisation of women', p: 5, m: [/sterili/] },
+    { t: 'Forced abortions', p: 5, m: [/abortion/] },
+    { t: 'Struggle sessions and public pressure on rule-breakers', p: 3, m: [/struggle session|shame|pressure|criticis/] },
+    { t: 'Work units and local cadres monitored pregnancies and issued birth permits', p: 3, m: [/work unit|danwei|cadre|monitor|permit|permission/] },
+    { t: 'Exceptions: ethnic minorities, and rural families whose first child was a girl', p: 5, m: [/exempt|exception|ethnic|minorit|rural famil|second child/] },
+    { t: 'A skewed sex ratio, with more boys than girls', p: 5, m: [/sex ratio|more boys|gender (ratio|imbalance)|imbalance|skewed/] },
+    { t: 'A preference for sons led to sex-selective abortion, abandonment and infanticide of girls', p: 5, m: [/infanticide|abandon|son preference|prefer\w* (sons|boys)|sex.?selective/] },
+    { t: 'The state claimed it prevented about 200 million births by 1989', p: 5, m: [/\b200\b|prevent/] },
+    { t: 'Spoilt only children: "little emperors"', p: 5, m: [/little emperor|spoil/] },
+    { t: 'An ageing population with fewer young people to support the elderly ("4-2-1")', p: 5, m: [/ageing|aging|elderly|4.?2.?1|old people/] },
+    { t: 'Population growth slowed', p: 3, m: [/slow|reduc|fewer (births|children|people)|birth rate/] },
+    { t: 'Some families hid extra children, who went unregistered ("black children")', p: 5, m: [/\bhid|hidden|unregistered|black child|hei ?hai ?zi|no hukou/] },
   ]},
   { id: 'polit', short: 'No political reform', q: 'Why did Deng oppose political reform?', a: [
     { t: 'He feared a return to the chaos of the Cultural Revolution', p: 3, m: [/chaos|anarchy|instab|cultural revolution|turmoil|\bluan\b/] },
     { t: 'The Four Cardinal Principles (1979)', p: 5, m: [/cardinal/] },
     { t: 'Upholding the leadership of the Communist Party', p: 3, m: [/leadership of the|party leadership|one.?party|monopoly|ccp control/] },
     { t: 'The Democracy Wall was shut down (1979)', p: 3, m: [/democracy wall/] },
-    { t: 'Wei Jingsheng was jailed for demanding the "Fifth Modernisation"', p: 5, m: [/wei ?jing ?sheng|fifth moderni/] },
+    { t: 'Wei Jingsheng was jailed for demanding the "Fifth Modernisation"', p: 5, m: [/wei ?jing? ?sheng|fifth moderni|5th moderni/] },
+    { t: 'He believed political stability was needed for economic modernisation', p: 3, m: [/stabilit|stable|economic (growth|moderni)/] },
+    { t: 'Hardliner Li Peng pushed for a crackdown', p: 5, m: [/li ?peng|hard.?liners?/] },
     { t: 'The "Four Great Freedoms" (speak out, air views, debate, big-character posters) were removed from the constitution in 1980', p: 5, m: [/four (great|big)|four bigs|\b1980\b|\b1982\b/] },
     { t: 'He purged his own reformist successor Hu Yaobang (1987)', p: 5, m: [/\bhu\b|yao ?bang/] },
     { t: 'He purged Zhao Ziyang (1989)', p: 5, m: [/zhao|ziyang/] },
     { t: 'An economic pragmatist but a political Leninist', p: 3, m: [/lenin/] },
     { t: 'Martial law and the 4 June 1989 crackdown in Tiananmen Square', p: 5, m: [/june|martial law|tiananmen|massacre|crackdown|\b1989\b/] },
     { t: 'Campaign against "spiritual pollution" (1983)', p: 5, m: [/spiritual pollution/] },
+    { t: 'Campaign against "bourgeois liberalisation" (1987)', p: 5, m: [/liberali[sz]ation/] },
+    { t: 'Deng: "Stability overrides everything"', p: 5, m: [/overrides? everything/] },
     { t: 'He did not want China to become capitalist or Western', p: 1, m: [/capitalis|western|bourgeois/] },
   ]},
   { id: 'demo', short: 'Democracy Movement 1978–79', q: 'What caused the Democracy Movement of 1978–79?', a: [
     { t: 'The "ten lost years" caused a crisis of faith in the CCP', p: 3, m: [/ten lost years|crisis of faith|lost faith|disillusion/] },
-    { t: 'Wei Jingsheng\'s essay "The Fifth Modernisation" (December 1978)', p: 5, m: [/wei ?jing ?sheng|fifth moderni/] },
+    { t: 'Wei Jingsheng\'s essay "The Fifth Modernisation" (December 1978)', p: 5, m: [/wei ?jing? ?sheng|fifth moderni|5th moderni/] },
+    { t: 'People wanted a new political system so the chaos could never happen again', p: 3, m: [/new (political )?system|never (happen )?again|prevent\w* (another|it|chaos|a repeat)/] },
+    { t: 'Activists took Deng\'s support as encouragement to go further', p: 3, m: [/encourag|go further|push(ed)? further/] },
     { t: 'Democracy seen as the only protection against a new "feudal" dictatorship', p: 3, m: [/feudal|dictator/] },
     { t: 'Deng allowed the Wall while it attacked his Maoist rivals', p: 3, m: [/\bhua\b|rival|whatever|maoist/] },
     { t: '"Seek truth from facts" was read as permission to question the past', p: 5, m: [/seek(ing)? truth|truth from facts/] },
@@ -522,6 +618,7 @@ const TOPICS = [
     { t: 'Leaders purged in the Cultural Revolution were rehabilitated', p: 3, m: [/rehabilit/] },
     { t: 'Big-character posters on the Xidan wall in Beijing', p: 5, m: [/xidan|big.?character|dazibao/] },
     { t: 'Victims and sent-down youth demanded justice', p: 3, m: [/sent.?down|rusticat|victim|justice|petition/] },
+    { t: 'Mao\'s death and the Gang of Four\'s fall loosened control', p: 3, m: [/gang of (four|4)|\bg4\b|mao.?s death|mao died/] },
     { t: 'Anger at the Cultural Revolution', p: 1, m: [/cultural revolution|\bcr\b/] },
     { t: 'The Democracy Wall', p: 1, m: [/wall/] },
   ]},
@@ -531,14 +628,41 @@ const TOPICS = [
     { t: 'Hu Yaobang encouraged open criticism', p: 3, m: [/\bhu\b|yao ?bang/] },
     { t: 'Fang Lizhi inspired protests at Hefei (December 1986)', p: 5, m: [/fang ?li ?zhi|hefei/] },
     { t: 'Inflation reached about 18.5% in 1988', p: 5, m: [/\b18(\.5)?\b|eighteen/] },
-    { t: 'Rising prices and inflation', p: 3, m: [/inflation|prices/] },
-    { t: 'Official corruption and "guandao" profiteering', p: 3, m: [/corrupt|guandao|profiteer|nepotism/] },
+    { t: 'Food and basic goods rose about 30% in price, causing panic buying', p: 5, m: [all('\\b30\\b|thirty', 'food|price|cost|necessit|goods'), /panic.?buy/] },
+    { t: 'Rising prices and inflation wiped out savings', p: 3, m: [/inflation|prices|savings/] },
+    { t: 'Official corruption and "guandao" profiteering', p: 3, m: [/corrupt|guandao|profiteer|nepotism|connections|guanxi/] },
     { t: 'Graduates worried about jobs and low pay', p: 3, m: [/\bjobs?\b|graduate|unemploy|\bpay\b|salar/] },
+    { t: 'The end of the "iron rice bowl": workers lost job security', p: 3, m: [/iron rice bowl|job security|sacked|fired|lifetime employ/] },
+    { t: 'Urban workers and residents joined in, angry at the economic side effects', p: 3, m: [/workers|urban|residents|citizens/] },
+    { t: 'Students wanted to choose their own party (multi-party elections)', p: 3, m: [/multi.?party|elections?|\bvote|choose (their|a) (own )?part|own (political )?part/] },
+    { t: 'Earlier student protests in 1985–86', p: 3, m: [/\b198[56]\b|earlier protest/] },
     { t: 'The Open Door exposed students to Western ideas', p: 3, m: [/west|foreign idea|open door/] },
     { t: 'Gorbachev\'s visit (May 1989) brought the world\'s media', p: 5, m: [/gorbachev/] },
-    { t: 'The hunger strike in Tiananmen Square', p: 5, m: [/hunger strike/] },
+    { t: 'The hunger strike in Tiananmen Square (from 13 May)', p: 5, m: [/hunger strike|13 may/] },
     { t: 'The Goddess of Democracy statue', p: 5, m: [/goddess/] },
+    { t: 'Student leaders such as Wang Dan, Wuer Kaixi and Chai Ling', p: 5, m: [/wang dan|wuer ?kaixi|chai ling/] },
+    { t: 'Crowded dorms and poor living conditions on campus', p: 3, m: [/dorm|living conditions|overcrowd|campus/] },
+    { t: 'Anger at the 1987 campaign against "bourgeois liberalisation"', p: 3, m: [/liberali[sz]ation/] },
     { t: 'Demands for democracy and a free press', p: 1, m: [/democracy|free press|freedom|free speech/] },
+  ]},
+  { id: 'tian', short: 'Tiananmen crackdown 1989', q: 'Why did Deng order the crackdown on the Tiananmen Square protesters in 1989?', a: [
+    { t: 'The protesters challenged the Four Cardinal Principles', p: 5, m: [/cardinal/] },
+    { t: 'Calls to end one-party rule crossed Deng\'s red line', p: 3, m: [/one.?party|party rule|monopoly|end (of )?(the )?(ccp|party|communis)|red line/] },
+    { t: 'He saw the protests as a threat to the survival of CCP rule', p: 3, m: [/threat|surviv|overthrow|existential|authority/] },
+    { t: 'He feared a return to the chaos of the Cultural Revolution', p: 3, m: [/chaos|anarchy|cultural revolution|turmoil|\bluan\b|instab/] },
+    { t: 'The 26 April People\'s Daily editorial had already branded the protests "turmoil"', p: 5, m: [/26 april|april 26|editorial|people.?s daily/] },
+    { t: 'The leadership was split between hardliners and soft-liners', p: 3, m: [/split|divid|faction|soft.?line|hard.?line/] },
+    { t: 'Hardliner Li Peng pushed for a crackdown', p: 5, m: [/li ?peng/] },
+    { t: 'Zhao Ziyang\'s soft line of dialogue failed, and he was purged', p: 5, m: [/zhao|ziyang|dialogue|negotiat/] },
+    { t: 'Protests during Gorbachev\'s visit (May 1989) humiliated the leadership', p: 5, m: [/gorbachev|embarrass|humiliat/] },
+    { t: 'Martial law was declared on 20 May 1989', p: 5, m: [/martial law|20 may|may 20/] },
+    { t: 'The hunger strike from 13 May drew huge sympathy', p: 3, m: [/hunger strike|13 may/] },
+    { t: 'Protests spread to workers and other cities', p: 3, m: [/workers|other cities|spread|nationwide|across china/] },
+    { t: 'Communism was collapsing in Eastern Europe', p: 3, m: [/eastern europe|poland|solidarity|soviet|ussr/] },
+    { t: 'The Goddess of Democracy statue was seen as a Western challenge', p: 3, m: [/goddess|statue/] },
+    { t: 'Workers formed an independent union, the Beijing Workers\' Autonomous Federation', p: 5, m: [/autonomous|independent union|workers.? (union|federation)/] },
+    { t: 'Party elders and President Yang Shangkun backed the hard line', p: 5, m: [/elders|yang shang ?kun|chen yun/] },
+    { t: 'Deng: "Stability overrides everything"', p: 5, m: [/overrides? everything/] },
   ]},
 ];
 TOPICS.forEach(tp => tp.a.forEach((a, i) => a.id = tp.id + i));
@@ -637,7 +761,7 @@ const ME = (() => { // per tab, so two tabs on one computer are two players
   try { let id = sessionStorage.getItem('dcb_cid'); if (!id) { id = uid(); sessionStorage.setItem('dcb_cid', id); } return id; } catch { return uid(); }
 })();
 const NET = { on: false, host: false, hostCid: '', code: '', db: null, fb: null, roster: [], off: [] };
-let mode = store.get('mode', 'local');
+let mode = store.get('mode', 'online');
 const isReferee = () => !NET.on || NET.host;
 const roomRef = p => NET.fb.ref(NET.db, `rooms/${NET.code}${p ? '/' + p : ''}`);
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -899,8 +1023,10 @@ function renderAll() {
   S.custom.forEach(c => chips.push(`<span class="fchip"><b>+1</b>${esc(c.text)} <i>${esc(c.who)} · counted</i></span>`));
   $('#found').innerHTML = chips.join('') || '<span class="label" style="text-transform:none;letter-spacing:0">Nothing yet. The croissant is warming up…</span>';
   const inp = $('#answerInput');
-  inp.disabled = $('#answerForm button').disabled = !(playing && myTurn);
-  inp.placeholder = myTurn ? 'Type your evidence…' : S.players.some(p => p.cid === ME) ? `Waiting for ${h.name}…` : 'You\'re watching this game';
+  const mine = S.players.find(p => p.cid === ME), inGame = !NET.on || (mine && mine.lives > 0);
+  inp.disabled = !(playing && inGame);
+  $('#answerForm button').disabled = !(playing && myTurn);
+  inp.placeholder = myTurn ? 'Type your evidence…' : inGame ? `${h.name} has it. Get your answer ready…` : mine ? 'You\'re out this game' : 'You\'re watching this game';
   if (V.holder !== S.current) { V.holder = S.current; if (playing && myTurn) inp.focus(); }
   $('#muteBtn').textContent = 'Sound: ' + (snd.on ? 'on' : 'off');
   $('#quitBtn').textContent = !NET.on ? 'Quit' : NET.host ? 'End game' : 'Leave';
@@ -1040,7 +1166,7 @@ $('#answerForm').addEventListener('submit', e => {
   if (!S || S.phase !== 'play') return;
   const t = $('#answerInput').value.trim();
   if (t.length < 2) { nudge(); return; }
-  if (NET.on && S.players[S.current].cid !== ME) return;
+  if (NET.on && S.players[S.current].cid !== ME) { nudge(); return; }
   act({ type: 'submit', text: t });
 });
 
