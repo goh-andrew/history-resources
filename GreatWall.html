@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Great Wall Run</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+html,body{height:100%;margin:0;background:#12141c;color:#fff;font-family:system-ui,-apple-system,sans-serif}
+#app{max-width:480px;height:100%;margin:0 auto;display:flex;flex-direction:column}
+#hud{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;font-weight:700;font-size:14px;gap:6px}
+#mute{background:none;border:0;color:#fff;font-size:18px;padding:0}
+#q{padding:8px 12px;font-size:14.5px;line-height:1.3;min-height:84px;background:#1d2130;box-sizing:border-box}
+#stage{position:relative;flex:1;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+#ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(14,10,16,.82);text-align:center;padding:24px;gap:12px}
+#ov h1{margin:0;font-size:30px;letter-spacing:2px;color:#f2c14e}#ov p{margin:0;color:#e2d7cc;line-height:1.4;font-size:14px}
+#nm{font:inherit;padding:10px 14px;border-radius:10px;border:2px solid #8a6d3b;background:#241c26;color:#fff;text-align:center;width:200px}
+button{font:inherit;cursor:pointer}
+.big{background:#c8372d;color:#fff;border:0;border-radius:12px;padding:12px 28px;font-weight:700;font-size:18px}
+#opts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px}
+#opts button{background:#262b40;color:#fff;border:2px solid #3a4160;border-radius:10px;padding:6px 4px;font-size:11.5px;line-height:1.2;min-height:72px}
+#opts button.sel{border-color:#f2c14e;background:#3d3412}
+</style></head><body>
+<div id="app">
+<div id="hud"><span id="me"></span><span id="score"></span><span id="lives"></span><span id="mao"></span><button id="mute" aria-label="Mute">🔊</button></div>
+<div id="q">Enter your name and run for your life!</div>
+<div id="stage"><canvas id="c"></canvas>
+<div id="ov"><h1>🏯 GREAT WALL RUN</h1><p>Mao is chasing you along the Great Wall. Read the question, then run into the lane with the right answer. You have 3 lives. Each wrong answer costs a life and lets him catch up. Lose all your lives or get caught and it’s over. Survive 20 questions to escape.</p><input id="nm" placeholder="Your name" maxlength="14"><button class="big" id="go">Start running</button></div></div>
+<div id="opts"><button data-l="0"></button><button data-l="1"></button><button data-l="2"></button></div>
+</div>
+<script>
+const Q=[
+["What was China’s GDP per capita in 1978, highlighting the economic stagnation after the Cultural Revolution?","$156 USD","$500 USD","$1,200 USD"],
+["Which 1976 event, initially mourning Premier Zhou Enlai, turned into a protest against radical policies?","The Tiananmen Incident","The May Fourth Movement","The Democracy Wall Protest"],
+["What was Hua Guofeng’s strict policy of upholding all of Mao’s decisions called?","The Two Whatevers","The Four Cardinal Principles","The Iron Rice Bowl"],
+["At which crucial 1978 meeting did Deng’s faction adopt “reform and open up”?","Third Plenum of the 11th Central Committee","The Lushan Conference","The Zunyi Meeting"],
+["What fear drove the CCP to implement the mandatory One-Child Policy?","A Malthusian fear of an “echo boom” exhausting resources","A desire to increase urban migration","Pressure from Western economic sanctions"],
+["What was the leadership’s economic goal under the “Four Modernizations”?","Quadruple per capita GDP by the year 2000","Match the GDP of the US by 1990","Eradicate the need for agriculture"],
+["How did Deng dismantle the People’s Communes to solve food shortages?","Let farmers sell surplus crops for individual profit","Import grain from the Soviet Union","Force farmers to work in urban factories"],
+["Which Maoist policy, guaranteeing lifetime employment but making factories unprofitable, did Deng dismantle?","The Iron Rice Bowl","The Great Leap Forward","The Open Door Policy"],
+["Why did Deng reinstate the Gaokao in 1977?","China desperately needed a skilled workforce for modernization","To monitor student political activity","To punish the “stinking old ninth”"],
+["What replaced Mao’s ideology of “class struggle” under Deng?","Socialist modernization and pragmatism","Radical egalitarianism","The Fifth Modernization"],
+["What were created as “capitalist-style enclaves” to attract foreign investment and technology?","Special Economic Zones","People’s Communes","State-Owned Enterprises"],
+["Why did Deng initially tolerate the Democracy Wall in 1978?","It helped him criticise the Cultural Revolution and oust rival Hua Guofeng","He wanted a multi-party democracy","The new constitution mandated it"],
+["What did Wei Jingsheng call for as a defence against dictatorship?","The “Fifth Modernization”: democracy","Return of Maoist policies","Violent revolution against the PLA"],
+["Which principle set the boundaries for political discussion, making multi-party democracy impossible?","Upholding the leadership of the Communist Party","Seeking truth from facts","The Three Represents"],
+["Which Cultural Revolution rights did Deng remove, calling them “tools of anarchy”?","The “Four Great Freedoms”","The right to private property","The right to free public education"],
+["What was a major economic cause of the 1989 student and worker unrest?","Official inflation of 18.5% wiping out savings","Collapse of the Soviet economy","High taxes on rural farmers"],
+["Whose death in 1989 sparked the first student gatherings in Tiananmen Square?","Hu Yaobang","Mao Zedong","Zhou Enlai"],
+["Why did urban workers join the 1989 student protests?","Angry about job insecurity and losing the “iron rice bowl”","To reinstate the Cultural Revolution","To demand shorter work hours"],
+["Which “softline” leader wanted to resolve the 1989 protests by dialogue but was overruled?","Zhao Ziyang","Li Peng","Hua Guofeng"],
+["Whose state visit embarrassed China during the 1989 protests, pushing Deng to side with hardliners?","Mikhail Gorbachev","Richard Nixon","Margaret Thatcher"]];
+const cv=document.getElementById('c'),g=cv.getContext('2d'),$=id=>document.getElementById(id),ob=[...document.querySelectorAll('#opts button')];
+let W,H,hy,py,lw;
+function rs(){const r=devicePixelRatio||1;W=cv.clientWidth;H=cv.clientHeight;cv.width=W*r;cv.height=H*r;g.setTransform(r,0,0,r,0,0);hy=H*.3;py=H*.7;lw=W*.3}
+addEventListener('resize',rs);
+let st='menu',lane=1,px=1,cx=1,d,lives=3,score,streak,answered,wave,wait,shake=0,off=0,deck=[],last=0,name='Runner';
+try{$('nm').value=localStorage.getItem('gwr')||''}catch(e){}
+const sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+function hud(){$('me').textContent='🏃 '+name;$('lives').textContent='❤️'.repeat(Math.max(lives,0));$('score').textContent='⭐ '+score+(streak>1?' 🔥'+streak:'');const p=Math.max(0,Math.ceil(d/3*5));$('mao').textContent='Mao '+'▰'.repeat(p)+'▱'.repeat(5-p)}
+function setLane(l){lane=Math.max(0,Math.min(2,l));ob.forEach((b,i)=>b.classList.toggle('sel',i===lane))}
+/* audio */
+let ac,mg,muted=false;
+function aud(){if(ac)return;ac=new(window.AudioContext||window.webkitAudioContext)();mg=ac.createGain();mg.connect(ac.destination);mel()}
+function tone(f,t,du,ty,v){const o=ac.createOscillator(),n=ac.createGain();o.type=ty;o.frequency.value=f;n.gain.setValueAtTime(v,t);n.gain.exponentialRampToValueAtTime(.001,t+du);o.connect(n);n.connect(mg);o.start(t);o.stop(t+du)}
+const M=[[392,.5],[523,1.5],[523,.5],[659,.5],[587,.5],[523,.5],[587,.5],[659,1.5],[659,.5],[784,.5],[659,.5],[587,.5],[523,.5],[587,1],[392,1],[392,.5],[523,1.5],[523,.5],[659,.5],[587,.5],[523,.5],[587,.5],[659,1.5],[784,1],[659,.5],[587,.5],[523,2]];
+function mel(){let t=ac.currentTime+.05,b=.52;for(const[f,n]of M){tone(f,t,n*b*.92,'triangle',.09);tone(f/2,t,n*b*.9,'square',.02);if(n>=1)tone(70,t,.2,'sine',.15);t+=n*b}setTimeout(mel,(t-ac.currentTime)*1000-150)}
+function sfx(ok){if(!ac)return;const t=ac.currentTime;if(ok){tone(660,t,.15,'square',.08);tone(990,t+.12,.25,'square',.08)}else{tone(130,t,.4,'sawtooth',.14);tone(70,t,.5,'sine',.25)}}
+$('mute').onclick=()=>{muted=!muted;if(mg)mg.gain.value=muted?0:1;$('mute').textContent=muted?'🔇':'🔊'};
+/* game */
+function newWave(){if(!deck.length)deck=sh(Q);const q=deck.pop(),o=sh(q.slice(1));
+wave={t:0,q,correct:o.indexOf(q[1]),dur:Math.max(8,12-answered*.2)};
+$('q').textContent=q[0];ob.forEach((b,i)=>b.textContent=o[i])}
+function resolve(){const ok=lane===wave.correct;answered++;
+if(ok){score+=10+streak*2;streak++;d=Math.min(3,d+.4);$('q').innerHTML='✅ <b>Correct!</b> '+wave.q[1]}
+else{streak=0;d-=1;lives--;shake=.4;$('q').innerHTML='💥 <b>Wrong!</b> Answer: '+wave.q[1]}
+sfx(ok);wave=null;wait=2.8;hud();if(d<=0||lives<=0)end(false);else if(answered>=20)end(true)}
+function end(win){st='over';$('ov').style.display='flex';
+$('ov').innerHTML=(win?'<h1>🎉 You escaped!</h1><p>'+name+', you outran Mao and survived all 20 questions.':'<h1>💀 Caught!</h1><p>Mao caught you, '+name+'.')+'<br>Score: <b>'+score+'</b> · Questions: '+answered+'/20</p><button class="big" id="go">Run again</button>';$('go').onclick=start}
+function start(){const n=$('nm');if(n&&n.value.trim())name=n.value.trim();try{localStorage.setItem('gwr',name)}catch(e){}
+aud();if(ac.state==='suspended')ac.resume();
+d=2;score=0;streak=0;answered=0;wave=null;wait=.8;d=2.2;lives=3;deck=sh(Q);cx=1;setLane(1);px=1;st='play';$('ov').style.display='none';hud();$('q').textContent='Run!'}
+$('go').onclick=start;
+function P(t){const y=hy+(py-hy)*Math.pow(t,1.7),r=(y-hy)/(py-hy),k=.06+.94*r;return{y,k,x:l=>W/2+(l-1)*lw*k}}
+const RG=[{base:.9,amp:.2,fq:.011,sp:25,col:'#5b4a70'},{base:.97,amp:.1,fq:.016,sp:60,col:'#3b3350',wall:1}];
+function ridge(x,l){const u=(x+off*l.sp)*l.fq;return hy*l.base-hy*l.amp*(Math.sin(u)+.5*Math.sin(u*2.3+1))}
+function draw(){g.save();g.clearRect(0,0,W,H);if(shake>0)g.translate((Math.random()-.5)*10,(Math.random()-.5)*10);
+let s=g.createLinearGradient(0,0,0,hy);s.addColorStop(0,'#2b2150');s.addColorStop(.7,'#d9694a');s.addColorStop(1,'#f5b25f');g.fillStyle=s;g.fillRect(0,0,W,hy+1);
+g.fillStyle='#fbe3a1';g.beginPath();g.arc(W*.75,hy*.62,hy*.14,0,7);g.fill();
+for(const l of RG){g.fillStyle=l.col;g.beginPath();g.moveTo(0,hy+4);for(let x=0;x<=W;x+=6)g.lineTo(x,ridge(x,l));g.lineTo(W,hy+4);g.fill();
+if(l.wall){g.strokeStyle='#c9b08a';g.lineWidth=5;g.beginPath();for(let x=0;x<=W;x+=6){const y=ridge(x,l);x?g.lineTo(x,y):g.moveTo(x,y)}g.stroke();
+g.fillStyle='#c9b08a';for(let x=0;x<=W;x+=10)g.fillRect(x,ridge(x,l)-6,5,4);
+for(let x=0;x<=W;x+=4){if(((x+off*l.sp)%170+170)%170<8){const y=ridge(x,l);g.fillStyle='#a8895f';g.fillRect(x-8,y-18,22,20);g.fillStyle='#7d3d36';g.fillRect(x-11,y-23,28,6)}}}}
+g.fillStyle='#2f3a33';g.fillRect(0,hy+3,W,H);
+const e=P(0),f=P(1);g.fillStyle='#9d8c78';g.beginPath();
+g.moveTo(e.x(-.5),hy);g.lineTo(e.x(2.5),hy);g.lineTo(f.x(2.5)+lw*.1,H);g.lineTo(f.x(-.5)-lw*.1,H);g.fill();
+for(let i=0;i<8;i++){const t=((i+off)%8)/8,p=P(t);g.fillStyle='rgba(60,45,35,.28)';g.fillRect(p.x(-.5),p.y,lw*3*p.k,3*p.k+1);
+g.fillStyle='#6e5d4c';for(const dd of[-.62,2.62])g.fillRect(p.x(dd)-9*p.k,p.y-16*p.k,18*p.k,18*p.k)}
+g.strokeStyle='#6e5d4c';g.lineWidth=4;g.beginPath();g.moveTo(e.x(-.5),hy);g.lineTo(f.x(-.5)-lw*.1,H);g.moveTo(e.x(2.5),hy);g.lineTo(f.x(2.5)+lw*.1,H);g.stroke();
+if(wave){const p=P(wave.t),w=lw*p.k*.92,h=100*p.k;
+for(let l=0;l<3;l++){const x=p.x(l)-w/2,y=p.y-h;g.fillStyle='#c8372d';g.fillRect(x,y,w,h);g.fillStyle='#f2c14e';g.fillRect(x,y,w,h*.12);g.fillRect(x,y+h*.88,w,h*.12);
+g.fillStyle='#fff';g.font='bold '+Math.max(8,46*p.k)+'px system-ui';g.textAlign='center';g.fillText('ABC'[l],p.x(l),y+h*.65)}}
+const X=P(1).x(px),bob=Math.sin(off*14)*3;
+/* Mao chaser: faceless silhouette */
+const mx=P(1).x(cx),my=py+8+Math.min(1,Math.max(d,0)/3)*(H-py-20),sc=.8,bb=Math.sin(off*12)*4;
+g.fillStyle='rgba(0,0,0,.3)';g.beginPath();g.ellipse(mx,my+2,28*sc,6*sc,0,0,7);g.fill();
+g.fillStyle='#3d3d3d';g.fillRect(mx-12*sc,my-14*sc,9*sc,14*sc+bb);g.fillRect(mx+3*sc,my-14*sc,9*sc,14*sc-bb);
+g.fillStyle='#6a7a58';g.beginPath();g.roundRect(mx-18*sc,my-56*sc+bb/2,36*sc,44*sc,8);g.fill();
+g.fillStyle='#5a5a5a';g.beginPath();g.arc(mx,my-66*sc+bb/2,12*sc,0,7);g.fill();
+g.fillStyle='#4a5440';g.fillRect(mx-13*sc,my-80*sc+bb/2,26*sc,8*sc);g.fillStyle='#d12';g.fillRect(mx-3*sc,my-78*sc+bb/2,6*sc,5*sc);
+g.fillStyle='#fff';g.font='bold 12px system-ui';g.textAlign='center';g.fillText('MAO',mx,my-88*sc+bb/2);
+/* player */
+const pY=py;g.fillStyle='#f2c14e';g.beginPath();g.roundRect(X-20,pY-62+bob,40,50,12);g.fill();
+g.fillStyle='#f2c9a0';g.beginPath();g.arc(X,pY-74+bob,14,0,7);g.fill();
+g.fillStyle='#222';g.fillRect(X-10,pY-12,8,12+bob/2);g.fillRect(X+2,pY-12,8,12-bob/2);
+if(d<=1&&st==='play'){g.fillStyle='rgba(200,20,20,'+(.12+.08*Math.sin(off*30))+')';g.fillRect(0,0,W,H)}
+g.restore()}
+function loop(ts){const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
+if(st==='play'){off+=dt*.9;px+=(lane-px)*Math.min(1,dt*14);cx+=(px-cx)*Math.min(1,dt*4);shake=Math.max(0,shake-dt);
+if(wave){wave.t+=dt/wave.dur;if(wave.t>=1){wave.t=1;resolve()}}else if(st==='play'){wait-=dt;if(wait<=0)newWave()}}
+else off+=dt*.3;
+if(W)draw();requestAnimationFrame(loop)}
+addEventListener('keydown',e=>{if(e.target.id==='nm')return;if(e.key==='ArrowLeft'||e.key==='a')setLane(lane-1);if(e.key==='ArrowRight'||e.key==='d')setLane(lane+1)});
+ob.forEach(b=>b.onclick=()=>setLane(+b.dataset.l));
+let tx=null;cv.addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});
+cv.addEventListener('touchend',e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>30)setLane(lane+(dx>0?1:-1));else{const r=cv.getBoundingClientRect();setLane(Math.floor((e.changedTouches[0].clientX-r.left)/r.width*3))}tx=null});
+cv.addEventListener('click',e=>{const r=cv.getBoundingClientRect();setLane(Math.floor((e.clientX-r.left)/r.width*3))});
+d=2;score=0;streak=0;rs();new ResizeObserver(rs).observe(cv);hud();setLane(1);requestAnimationFrame(loop);
+</script></body></html>
