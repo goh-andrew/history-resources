@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Deng Croissant Bomb</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -79,6 +80,22 @@ button { cursor: pointer; }
 .pk b { color: var(--butter); }
 .start-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .start-row .btn { font-size: 20px; padding: 14px 28px; }
+.btn:disabled { opacity: .45; cursor: default; transform: none; }
+
+/* ---------- online room ---------- */
+.room-entry { display: flex; flex-direction: column; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field input, #joinCode { background: var(--tray-2); border: 2px solid transparent; border-radius: 10px; padding: 10px 12px; }
+.field input:focus, #joinCode:focus { border-color: var(--butter); outline: none; }
+.room-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+#joinCode { width: 8ch; font-family: var(--mono); text-transform: uppercase; letter-spacing: .15em; text-align: center; }
+.room-code { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.room-code strong { font-family: var(--mono); font-size: 34px; letter-spacing: .2em; color: var(--butter); line-height: 1; }
+.rp { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--tray-2); font-weight: 600; }
+.rp small { font-family: var(--mono); font-size: 11px; color: var(--crumb-dim); font-weight: 500; }
+#netMsg:empty { display: none; }
+.answer input:disabled { opacity: .6; }
+.pchip.me .nm::after { content: " (you)"; color: var(--crumb-dim); font-weight: 600; }
 
 /* ---------- game ---------- */
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -253,21 +270,49 @@ button { cursor: pointer; }
           <g class="spark"><circle cx="126" cy="4" r="6" fill="#ffe27a"/><circle cx="126" cy="4" r="3" fill="#fff"/></g>
         </svg>
       </div>
-      <p>Pass the croissant on one device. Give a piece of evidence that hasn't been said yet, then hand it on. The fuse is hidden. Whoever's holding it when it goes off loses a life.</p>
+      <p>Pass the croissant round one device, or open an online room so everyone plays on their own. Give a piece of evidence that hasn't been said yet, then hand it on. The fuse is hidden. Whoever's holding it when it goes off loses a life.</p>
     </header>
 
-    <div class="panel">
+    <div class="panel" id="modePanel">
+      <h2>How are you playing?</h2>
+      <div class="seg" role="radiogroup" aria-label="Play mode">
+        <label><input type="radio" name="mode" value="local" checked><span>One device<small>pass it round</small></span></label>
+        <label><input type="radio" name="mode" value="online"><span>Online room<small>everyone on their own device</small></span></label>
+      </div>
+    </div>
+
+    <div class="panel" id="onlinePanel" hidden>
+      <h2>Online room</h2>
+      <div class="room-entry" id="roomEntry">
+        <label class="field"><span class="label">Your name</span><input id="myName" maxlength="18" autocomplete="nickname"></label>
+        <div class="room-actions">
+          <button class="btn small" id="createRoom" type="button">Create a room</button>
+          <span class="label">or join</span>
+          <input id="joinCode" maxlength="4" placeholder="CODE" aria-label="Room code" autocapitalize="characters" autocomplete="off">
+          <button class="btn ghost small" id="joinRoom" type="button">Join</button>
+        </div>
+      </div>
+      <div class="room-entry" id="roomInfo" hidden>
+        <div class="room-code"><span class="label">Room code</span><strong id="roomCode"></strong><button class="btn ghost small" id="copyLink" type="button">Copy invite link</button></div>
+        <div class="players" id="roomPlayers"></div>
+        <span class="label" id="roomWait" hidden>Waiting for the host to light the fuse…</span>
+        <div><button class="btn ghost small" id="leaveRoom" type="button">Leave room</button></div>
+      </div>
+      <span class="label" id="netMsg" aria-live="polite"></span>
+    </div>
+
+    <div class="panel" id="playersPanel">
       <h2>Players</h2>
       <div class="players" id="playerList"></div>
       <div><button class="btn ghost small" id="addPlayer" type="button">+ Add player</button></div>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="topicsPanel">
       <h2>Topics</h2>
       <div class="topics" id="topicList"></div>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="fusePanel">
       <h2>Fuse</h2>
       <div class="seg" role="radiogroup" aria-label="Fuse length">
         <label><input type="radio" name="fuse" id="fuseEasy" value="easy"><span>Slow bake<small>18–40 s</small></span></label>
@@ -292,7 +337,7 @@ button { cursor: pointer; }
       </div>
     </div>
 
-    <div class="start-row">
+    <div class="start-row" id="startRow">
       <button class="btn" id="startBtn" type="button"><svg class="hs" aria-hidden="true"><use href="#hs" fill="#2a1206"/></svg> Light the fuse</button>
       <span class="label" id="setupMsg"></span>
     </div>
@@ -348,7 +393,7 @@ button { cursor: pointer; }
     <h2 id="revealTitle">Kaboom!</h2>
     <div class="label" id="revealSub"></div>
     <ul class="list" id="revealList"></ul>
-    <div><button class="btn" id="nextBtn" type="button">Next round</button></div>
+    <div><button class="btn" id="nextBtn" type="button">Next round</button><span class="label" id="revealWait" hidden>Waiting for the host to start the next round…</span></div>
   </div>
 </div>
 
@@ -360,6 +405,7 @@ button { cursor: pointer; }
     <div class="label">Final scores</div>
     <div class="rank" id="rank"></div>
     <div class="label" id="overStats"></div>
+    <span class="label" id="overWait" hidden>Waiting for the host to start another game.</span>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn" id="againBtn" type="button">Play again</button>
       <button class="btn ghost" id="setupBtn" type="button">Change setup</button>
@@ -367,6 +413,7 @@ button { cursor: pointer; }
   </div>
 </div>
 
+<script src="firebase-config.js"></script>
 <script>
 /* ===================== EVIDENCE BANK =====================
    Each answer: t = shown text, p = points, m = patterns tested against the
@@ -581,23 +628,186 @@ const savedFuse = store.get('fuse', 'normal');
 document.querySelectorAll('input[name=fuse]').forEach(r => r.checked = r.value === savedFuse);
 drawPlayers();
 
-/* ===================== GAME STATE ===================== */
+/* ===================== ONLINE ROOMS =====================
+   Firebase Realtime Database. The host's browser is the referee: it owns the
+   hidden fuse and the answer checking, and publishes the game to everyone.  */
+const FB_VER = '10.12.2';
+const uid = () => Math.random().toString(36).slice(2, 10);
+const ME = (() => { // per tab, so two tabs on one computer are two players
+  try { let id = sessionStorage.getItem('dcb_cid'); if (!id) { id = uid(); sessionStorage.setItem('dcb_cid', id); } return id; } catch { return uid(); }
+})();
+const NET = { on: false, host: false, hostCid: '', code: '', db: null, fb: null, roster: [], off: [] };
+let mode = store.get('mode', 'local');
+const isReferee = () => !NET.on || NET.host;
+const roomRef = p => NET.fb.ref(NET.db, `rooms/${NET.code}${p ? '/' + p : ''}`);
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+const newCode = () => Array.from({ length: 4 }, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join('');
+
+async function loadFirebase() {
+  if (NET.fb) return;
+  const cfg = window.FIREBASE_CONFIG;
+  if (!cfg || !/^https?:\/\//.test(cfg.databaseURL || '')) throw new Error('setup');
+  const [app, db] = await Promise.all([
+    import(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-app.js`),
+    import(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-database.js`),
+  ]);
+  NET.db = db.getDatabase(app.initializeApp(cfg));
+  NET.fb = db;
+}
+
+function netMsg(t) { $('#netMsg').textContent = t; }
+function netFail(e) {
+  console.error(e);
+  netMsg(e && e.message === 'setup'
+    ? 'Online rooms aren\'t switched on yet. Paste a Firebase config into firebase-config.js (steps in the README).'
+    : 'Couldn\'t reach the room server. Check your connection and try again.');
+}
+function askName() {
+  const n = $('#myName').value.trim();
+  if (!n) { netMsg('Type your name first.'); $('#myName').focus(); return ''; }
+  store.set('myName', n);
+  return n;
+}
+
+async function createRoom() {
+  const name = askName(); if (!name) return;
+  netMsg('Opening a room…');
+  try {
+    await loadFirebase();
+    const { get, set, ref, serverTimestamp } = NET.fb;
+    let code = newCode();
+    for (let i = 0; i < 5 && (await get(ref(NET.db, `rooms/${code}/meta`))).exists(); i++) code = newCode();
+    await set(ref(NET.db, `rooms/${code}/meta`), { host: ME, t: serverTimestamp() });
+    await enterRoom(code, true, name);
+  } catch (e) { netFail(e); }
+}
+
+async function joinRoom() {
+  const name = askName(); if (!name) return;
+  const code = $('#joinCode').value.trim().toUpperCase();
+  if (!/^[A-Z]{4}$/.test(code)) { netMsg('Room codes are four letters.'); $('#joinCode').focus(); return; }
+  netMsg('Joining…');
+  try {
+    await loadFirebase();
+    if (!(await NET.fb.get(NET.fb.ref(NET.db, `rooms/${code}/meta`))).exists()) { netMsg(`There's no room ${code}. Check the code with your host.`); return; }
+    await enterRoom(code, false, name);
+  } catch (e) { netFail(e); }
+}
+
+async function enterRoom(code, host, name) {
+  const { set, remove, ref, onValue, onChildAdded, onDisconnect } = NET.fb;
+  Object.assign(NET, { on: true, host, code, hostCid: host ? ME : '' });
+  const meRef = roomRef('players/' + ME), joined = Date.now();
+  // The host leaving closes the room; a guest leaving just drops them from it.
+  const register = () => Promise.all([set(meRef, { name, t: joined }), onDisconnect(host ? roomRef() : meRef).remove()]);
+  await register();
+  if (!host) NET.off.push(onValue(ref(NET.db, '.info/connected'), s => { if (s.val() === true && NET.on) register().catch(() => {}); }));
+  NET.off.push(onValue(roomRef('meta'), s => {
+    if (!s.exists()) { roomGone(NET.host ? 'Your room closed.' : 'The host closed the room.'); return; }
+    NET.hostCid = s.val().host;
+    renderRoom();
+  }));
+  NET.off.push(onValue(roomRef('players'), s => {
+    NET.roster = Object.entries(s.val() || {})
+      .map(([cid, p]) => ({ cid, name: String((p && p.name) || 'Comrade').slice(0, 18), t: (p && p.t) || 0 }))
+      .sort((a, b) => a.t - b.t);
+    renderRoom();
+    if (NET.host) rosterChanged(); else if (S) renderAll();
+  }));
+  if (host) NET.off.push(onChildAdded(roomRef('actions'), s => { const a = s.val(); remove(s.ref); handleAction(a, a && a.from); }));
+  else NET.off.push(onValue(roomRef('state'), s => receive(s.val())));
+  try { history.replaceState(null, '', '?room=' + code); } catch {}
+  netMsg('');
+  renderSetup();
+}
+
+function closeRoom() {
+  if (!NET.on) return;
+  NET.off.forEach(f => f()); NET.off = [];
+  const target = NET.host ? roomRef() : roomRef('players/' + ME);
+  NET.fb.onDisconnect(target).cancel().catch(() => {});
+  NET.fb.remove(target).catch(() => {});
+  Object.assign(NET, { on: false, host: false, hostCid: '', code: '', roster: [] });
+  S = null; cancelAnimationFrame(raf);
+  try { history.replaceState(null, '', location.pathname); } catch {}
+  showSetup();
+}
+function roomGone(msg) { closeRoom(); netMsg(msg); }
+
+function renderSetup() {
+  const on = mode === 'online', canRun = !on || NET.host;
+  $('#modePanel').hidden = NET.on;
+  $('#playersPanel').hidden = on;
+  $('#onlinePanel').hidden = !on;
+  $('#roomEntry').hidden = NET.on;
+  $('#roomInfo').hidden = !NET.on;
+  $('#roomWait').hidden = !(NET.on && !NET.host);
+  $('#topicsPanel').hidden = $('#fusePanel').hidden = $('#startRow').hidden = !canRun;
+  renderRoom();
+}
+function renderRoom() {
+  if (!NET.on) return;
+  $('#roomCode').textContent = NET.code;
+  $('#roomPlayers').innerHTML = NET.roster.map(p => {
+    const tags = [p.cid === NET.hostCid && 'host', p.cid === ME && 'you'].filter(Boolean).join(' · ');
+    return `<div class="rp"><span>${esc(p.name)}</span><small>${tags}</small></div>`;
+  }).join('');
+}
+function showSetup() {
+  $('#reveal').hidden = $('#over').hidden = $('#game').hidden = true;
+  $('#setup').hidden = false;
+  drawPlayers(); renderSetup();
+}
+
+$('#myName').value = store.get('myName', '');
+{
+  const r = new URLSearchParams(location.search).get('room');
+  if (r && /^[a-z]{4}$/i.test(r)) { mode = 'online'; $('#joinCode').value = r.toUpperCase(); }
+}
+document.querySelectorAll('input[name=mode]').forEach(r => {
+  r.checked = r.value === mode;
+  r.addEventListener('change', () => { mode = r.value; store.set('mode', mode); netMsg(''); renderSetup(); });
+});
+$('#createRoom').onclick = createRoom;
+$('#joinRoom').onclick = joinRoom;
+$('#joinCode').addEventListener('keydown', e => { if (e.key === 'Enter') joinRoom(); });
+$('#leaveRoom').onclick = () => { closeRoom(); netMsg(''); };
+$('#copyLink').onclick = async () => {
+  const url = location.href.split('?')[0] + '?room=' + NET.code;
+  try { await navigator.clipboard.writeText(url); $('#copyLink').textContent = 'Copied!'; setTimeout(() => { $('#copyLink').textContent = 'Copy invite link'; }, 1800); }
+  catch { netMsg('Share this link: ' + url); }
+};
+renderSetup();
+
+/* ===================== GAME STATE =====================
+   S is the game. Only the referee (this device, or the host online) changes
+   it; guests rebuild S from what the host publishes. V remembers what this
+   screen has already shown, so each change animates exactly once.        */
 let S = null, raf = 0;
+const V = { gid: '', round: -1, boom: false, over: false, n: 0, holder: -1, roundStart: 0, lastTick: 0 };
 
 function startGame() {
   snd.init();
-  const ps = names.map(n => n.trim()).filter(Boolean);
   chosen = [...document.querySelectorAll('#topicList input:checked')].map(i => i.value);
-  if (ps.length < 2) { $('#setupMsg').textContent = 'You need at least two players.'; return; }
+  let players;
+  if (NET.on) {
+    if (NET.roster.length < 2) { $('#setupMsg').textContent = 'You need at least two people in the room.'; return; }
+    players = NET.roster.slice(0, 8).map(p => ({ name: p.name, cid: p.cid }));
+  } else {
+    const ps = names.map(n => n.trim()).filter(Boolean);
+    if (ps.length < 2) { $('#setupMsg').textContent = 'You need at least two players.'; return; }
+    store.set('names', ps);
+    players = ps.map(name => ({ name, cid: '' }));
+  }
   if (!chosen.length) { $('#setupMsg').textContent = 'Pick at least one topic.'; return; }
   const fuse = document.querySelector('input[name=fuse]:checked').value;
-  store.set('names', ps); store.set('topics', chosen); store.set('fuse', fuse);
+  store.set('topics', chosen); store.set('fuse', fuse);
+  $('#setupMsg').textContent = '';
   S = {
-    players: ps.map(n => ({ name: n, lives: 3, score: 0 })),
-    current: 0, fuse: FUSE[fuse], queue: [], topic: null, used: new Map(), custom: [],
-    round: 0, phase: 'play', fuseEnd: 0, roundStart: 0, lastTick: 0, totalSaid: 0,
+    gid: uid(), players: players.map(p => ({ ...p, lives: 3, score: 0 })),
+    current: 0, fuse: FUSE[fuse], queue: [], topic: null, used: new Map(), custom: [], pending: null,
+    round: 0, phase: 'play', fuseEnd: 0, lastLoser: -1, totalSaid: 0, evn: 0, ev: null,
   };
-  $('#setup').hidden = true; $('#game').hidden = false; $('#over').hidden = true;
   startRound();
 }
 
@@ -608,43 +818,92 @@ function nextTopic() {
 }
 
 function startRound() {
-  S.round++; S.topic = nextTopic(); S.used = new Map(); S.custom = [];
-  const now = performance.now();
-  S.roundStart = now; S.fuseEnd = now + rand(S.fuse[0], S.fuse[1]) * 1000; S.lastTick = now;
+  S.round++; S.topic = nextTopic(); S.used = new Map(); S.custom = []; S.pending = null;
+  S.fuseEnd = performance.now() + rand(S.fuse[0], S.fuse[1]) * 1000;
   S.phase = 'play';
-  $('#bun').style.visibility = 'visible';
-  $('#reveal').hidden = true;
-  $('#roundLabel').textContent = `Round ${S.round} · ${S.topic.short}`;
-  $('#promptText').textContent = S.topic.q;
-  $('#feedback').innerHTML = '';
-  renderAll();
-  const inp = $('#answerInput'); inp.value = ''; inp.focus();
-  cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
+  emit({ type: 'round' });
 }
 
 const alive = () => S.players.filter(p => p.lives > 0);
-function nextAlive(i) { const n = S.players.length; for (let k = 1; k <= n; k++) { const j = (i + k) % n; if (S.players[j].lives > 0) return j; } return i; }
-
-function renderAll() {
-  $('#pbar').innerHTML = S.players.map((p, i) => `
-    <div class="pchip ${i === S.current && S.phase === 'play' ? 'on' : ''} ${p.lives <= 0 ? 'out' : ''}">
-      <span class="nm">${esc(p.name)}</span>
-      <span class="meta"><span class="lives">${[0, 1, 2].map(k => MINI.replace('<svg', `<svg class="${k < p.lives ? '' : 'gone'}"`)).join('')}</span>${p.score} pts</span>
-    </div>`).join('');
-  $('#holder').innerHTML = `<span class="comrade">★ Comrade ★</span><em>${esc(S.players[S.current].name)}</em> is holding the croissant`;
-  const chips = [];
-  S.used.forEach((who, id) => { const a = S.topic.a.find(x => x.id === id); chips.push(`<span class="fchip"><b>+${a.p}</b>${esc(a.t)} <i>${esc(who)}</i></span>`); });
-  S.custom.forEach(c => chips.push(`<span class="fchip"><b>+1</b>${esc(c.text)} <i>${esc(c.who)} · counted</i></span>`));
-  $('#found').innerHTML = chips.join('') || '<span class="label" style="text-transform:none;letter-spacing:0">Nothing yet. The croissant is warming up…</span>';
-  $('#muteBtn').textContent = 'Sound: ' + (snd.on ? 'on' : 'off');
-}
+const here = p => !NET.on || NET.roster.some(r => r.cid === p.cid);
+function nextAlive(i) { const n = S.players.length; for (let k = 1; k <= n; k++) { const j = (i + k) % n; if (S.players[j].lives > 0 && here(S.players[j])) return j; } return i; }
 
 function passOn() {
   S.current = nextAlive(S.current);
   const now = performance.now(), min = S.fuse[2] * 1000;
   if (S.fuseEnd - now < min) S.fuseEnd = now + min;
+}
+
+function emit(ev) {
+  S.ev = { ...ev, n: ++S.evn, round: S.round };
+  if (NET.on) publish();
+  show(S.ev);
+}
+
+function publish() {
+  NET.fb.set(roomRef('state'), {
+    gid: S.gid, round: S.round, phase: S.phase, current: S.current, topic: S.topic.id,
+    lastLoser: S.lastLoser, totalSaid: S.totalSaid,
+    players: S.players.map(p => ({ name: p.name, cid: p.cid, lives: p.lives, score: p.score })),
+    used: [...S.used].map(([id, who]) => ({ id, who })),
+    custom: S.custom, pending: S.pending, ev: S.ev,
+  }).catch(e => console.error(e));
+}
+
+function receive(s) {
+  if (!s) { if (S) { S = null; cancelAnimationFrame(raf); showSetup(); } return; }
+  const topic = TOPICS.find(t => t.id === s.topic);
+  if (!topic) return;
+  S = {
+    gid: s.gid, round: s.round, phase: s.phase, current: s.current, topic,
+    lastLoser: s.lastLoser ?? -1, totalSaid: s.totalSaid || 0,
+    players: Object.values(s.players || {}),
+    used: new Map(Object.values(s.used || {}).map(u => [u.id, u.who])),
+    custom: Object.values(s.custom || {}), pending: s.pending || null,
+  };
+  show(s.ev || {});
+}
+
+function show(ev) {
+  $('#setup').hidden = true; $('#game').hidden = false;
+  if (S.gid !== V.gid) { V.gid = S.gid; V.n = 0; V.round = -1; }
+  if (S.round !== V.round) { V.round = S.round; V.boom = V.over = false; V.holder = -1; roundView(); }
+  if (S.phase !== 'play' && !V.boom) { V.boom = true; boomView(); }
+  if (S.phase === 'over' && !V.over) { V.over = true; overView(); }
+  if (ev.n > V.n) { V.n = ev.n; if (ev.round === S.round) feedbackView(ev); }
   renderAll();
-  const inp = $('#answerInput'); inp.value = ''; inp.focus();
+}
+
+function roundView() {
+  V.roundStart = V.lastTick = performance.now();
+  $('#bun').style.visibility = 'visible';
+  $('#reveal').hidden = $('#over').hidden = true;
+  $('#roundLabel').textContent = `Round ${S.round} · ${S.topic.short}`;
+  $('#promptText').textContent = S.topic.q;
+  $('#feedback').innerHTML = '';
+  $('#answerInput').value = '';
+  cancelAnimationFrame(raf); raf = requestAnimationFrame(anim);
+}
+
+function renderAll() {
+  if (!S) return;
+  const h = S.players[S.current], myTurn = !NET.on || h.cid === ME, playing = S.phase === 'play';
+  $('#pbar').innerHTML = S.players.map((p, i) => `
+    <div class="pchip ${i === S.current && playing ? 'on' : ''} ${p.lives <= 0 || !here(p) ? 'out' : ''} ${NET.on && p.cid === ME ? 'me' : ''}">
+      <span class="nm">${esc(p.name)}</span>
+      <span class="meta"><span class="lives">${[0, 1, 2].map(k => MINI.replace('<svg', `<svg class="${k < p.lives ? '' : 'gone'}"`)).join('')}</span>${p.score} pts</span>
+    </div>`).join('');
+  $('#holder').innerHTML = `<span class="comrade">★ Comrade ★</span>${NET.on && myTurn ? '<em>You</em> are' : `<em>${esc(h.name)}</em> is`} holding the croissant`;
+  const chips = [];
+  S.used.forEach((who, id) => { const a = S.topic.a.find(x => x.id === id); if (a) chips.push(`<span class="fchip"><b>+${a.p}</b>${esc(a.t)} <i>${esc(who)}</i></span>`); });
+  S.custom.forEach(c => chips.push(`<span class="fchip"><b>+1</b>${esc(c.text)} <i>${esc(c.who)} · counted</i></span>`));
+  $('#found').innerHTML = chips.join('') || '<span class="label" style="text-transform:none;letter-spacing:0">Nothing yet. The croissant is warming up…</span>';
+  const inp = $('#answerInput');
+  inp.disabled = $('#answerForm button').disabled = !(playing && myTurn);
+  inp.placeholder = myTurn ? 'Type your evidence…' : S.players.some(p => p.cid === ME) ? `Waiting for ${h.name}…` : 'You\'re watching this game';
+  if (V.holder !== S.current) { V.holder = S.current; if (playing && myTurn) inp.focus(); }
+  $('#muteBtn').textContent = 'Sound: ' + (snd.on ? 'on' : 'off');
+  $('#quitBtn').textContent = !NET.on ? 'Quit' : NET.host ? 'End game' : 'Leave';
 }
 
 function feedback(html) { $('#feedback').innerHTML = html; }
@@ -700,58 +959,116 @@ function findHits(tp, raw) {
   return hits.concat(scored.filter(a => !hits.includes(a)));
 }
 
-function submit(text) {
-  if (!S || S.phase !== 'play') return;
-  const raw = text.trim();
-  if (raw.length < 2) { nudge(); return; }
+/* ===================== REFEREE: answers and actions ===================== */
+function judge(raw) {
+  raw = raw.trim();
+  if (raw.length < 2) return;
   const hits = findHits(S.topic, raw);
   const fresh = hits.filter(a => !S.used.has(a.id)).sort((x, y) => y.p - x.p);
   const me = S.players[S.current];
   if (fresh.length) {
     const a = fresh[0];
-    S.used.set(a.id, me.name); me.score += a.p; S.totalSaid++;
-    snd.good();
-    feedback(`<span class="pts">+${a.p}</span><span class="good">${esc(a.t)}</span>`);
+    S.used.set(a.id, me.name); me.score += a.p; S.totalSaid++; S.pending = null;
     passOn();
+    emit({ type: 'good', pts: a.p, text: a.t, who: me.name, cid: me.cid });
   } else if (hits.length) {
-    snd.bad(); nudge();
-    const by = S.used.get(hits[0].id);
-    feedback(`<span class="bad">Already said by ${esc(by)}: "${esc(hits[0].t)}". Try something else!</span>`);
+    emit({ type: 'dup', text: hits[0].t, by: S.used.get(hits[0].id), who: me.name, cid: me.cid });
   } else {
-    snd.bad(); nudge();
-    feedback(`<span class="bad">That's not in the evidence bank.</span>
-      <button class="btn ghost small" type="button" id="countIt">Count it (+1)</button>`);
-    $('#countIt').onclick = () => {
-      if (S.phase !== 'play') return;
-      S.custom.push({ text: raw, who: me.name }); me.score += 1; S.totalSaid++;
-      snd.good(); feedback(`<span class="pts">+1</span><span class="good">Counted: ${esc(raw)}</span>`);
-      passOn();
-    };
+    S.pending = { pid: uid(), text: raw };
+    emit({ type: 'miss', text: raw, who: me.name, cid: me.cid, pid: S.pending.pid });
   }
 }
 
-$('#answerForm').addEventListener('submit', e => { e.preventDefault(); submit($('#answerInput').value); });
+function handleAction(a, from) {
+  if (!S || S.phase !== 'play' || !a) return;
+  const holder = S.players[S.current];
+  if (a.type === 'submit') {
+    if (NET.on && holder.cid !== from) return;
+    judge(String(a.text || '').slice(0, 160));
+  } else if (a.type === 'count') {
+    if (!S.pending || S.pending.pid !== a.pid) return;
+    if (NET.on && (holder.cid === from || !S.players.some(p => p.cid === from))) return;
+    const text = S.pending.text;
+    S.custom.push({ text, who: holder.name }); holder.score += 1; S.totalSaid++; S.pending = null;
+    passOn();
+    emit({ type: 'count', text, who: holder.name });
+  }
+}
+
+function act(a) {
+  if (isReferee()) handleAction(a, ME);
+  else NET.fb.push(roomRef('actions'), { ...a, from: ME }).catch(e => console.error(e));
+}
+
+function rosterChanged() {
+  if (!S) return;
+  const h = S.players[S.current];
+  if (S.phase === 'play' && !here(h)) {
+    const nx = nextAlive(S.current);
+    if (nx !== S.current) { S.current = nx; S.pending = null; emit({ type: 'skip', who: h.name }); return; }
+  }
+  renderAll();
+}
+
+function feedbackView(ev) {
+  const mine = !NET.on || ev.cid === ME, by = NET.on && !mine ? `${esc(ev.who)}: ` : '';
+  if (ev.type === 'good') {
+    snd.good();
+    feedback(`<span class="pts">+${ev.pts}</span><span class="good">${by}${esc(ev.text)}</span>`);
+    if (mine) $('#answerInput').value = '';
+  } else if (ev.type === 'count') {
+    snd.good();
+    feedback(`<span class="pts">+1</span><span class="good">Counted: ${esc(ev.text)}</span>`);
+  } else if (ev.type === 'dup') {
+    if (mine) { snd.bad(); nudge(); }
+    feedback(`<span class="bad">${by}Already said by ${esc(ev.by)}: "${esc(ev.text)}".${mine ? ' Try something else!' : ''}</span>`);
+  } else if (ev.type === 'miss') {
+    if (mine) { snd.bad(); nudge(); }
+    const canCount = !NET.on || (!mine && S.players.some(p => p.cid === ME));
+    const msg = !NET.on ? 'That\'s not in the evidence bank.'
+      : mine ? 'That\'s not in the evidence bank. Someone else can count it if it\'s fair.'
+      : `${esc(ev.who)} said "${esc(ev.text)}". It's not in the evidence bank.`;
+    feedback(`<span class="bad">${msg}</span>${canCount ? '<button class="btn ghost small" type="button" id="countIt">Count it (+1)</button>' : ''}`);
+    if (canCount) $('#countIt').onclick = () => act({ type: 'count', pid: ev.pid });
+  } else if (ev.type === 'skip') {
+    feedback(`<span class="bad">${esc(ev.who)} dropped out, so the croissant moved on.</span>`);
+  }
+}
+
+$('#answerForm').addEventListener('submit', e => {
+  e.preventDefault();
+  if (!S || S.phase !== 'play') return;
+  const t = $('#answerInput').value.trim();
+  if (t.length < 2) { nudge(); return; }
+  if (NET.on && S.players[S.current].cid !== ME) return;
+  act({ type: 'submit', text: t });
+});
 
 /* ===================== LOOP: wobble, tick, explode ===================== */
-function loop(now) {
+function anim(now) {
   if (!S || S.phase !== 'play') return;
-  const el = (now - S.roundStart) / 1000;
-  const heat = Math.min(1, el / 22);
+  const heat = Math.min(1, (now - V.roundStart) / 1000 / 22);
   if (!reduced) {
     const amp = 2 + heat * 9, sp = 6 + heat * 18;
     const r = Math.sin(now / 1000 * sp) * amp, s = 1 + Math.sin(now / 1000 * sp * 1.7) * (0.01 + heat * 0.035);
     $('#bun').style.transform = `rotate(${r}deg) scale(${s})`;
   }
   const gap = 700 - heat * 420;
-  if (now - S.lastTick > gap) { snd.tick(); S.lastTick = now; }
-  if (now >= S.fuseEnd) { explode(); return; }
-  raf = requestAnimationFrame(loop);
+  if (now - V.lastTick > gap) { snd.tick(); V.lastTick = now; }
+  raf = requestAnimationFrame(anim);
 }
+
+// A timer rather than the animation frame, so the fuse still goes off when the host's tab is in the background.
+setInterval(() => { if (S && S.phase === 'play' && isReferee() && performance.now() >= S.fuseEnd) explode(); }, 100);
 
 function explode() {
   S.phase = 'boom';
-  const loser = S.players[S.current];
-  loser.lives--;
+  S.players[S.current].lives--;
+  S.lastLoser = S.current; S.pending = null;
+  emit({ type: 'boom' });
+}
+
+function boomView() {
   snd.boom();
   const box = $('#bun').getBoundingClientRect();
   $('#bun').style.visibility = 'hidden';
@@ -761,9 +1078,9 @@ function explode() {
     const app = $('#app'); app.classList.remove('quake'); void app.offsetWidth; app.classList.add('quake');
   }
   $('#answerInput').blur();
-  renderAll();
-  S.lastLoser = S.current;
-  setTimeout(showReveal, reduced ? 300 : 1300);
+  $('#countIt')?.remove();
+  const g = S.gid, r = S.round;
+  setTimeout(() => { if (S && S.gid === g && S.round === r && S.phase === 'boom') showReveal(); }, reduced ? 300 : 1300);
 }
 
 const BOOM_LINES = ['got flaked!', 'got buttered!', 'is toast!', 'was sent down to the countryside!', 'got purged from the bakery!', 'failed the Five-Year Pastry Plan!'];
@@ -777,32 +1094,48 @@ function showReveal() {
     const who = S.used.get(a.id);
     return `<li class="${who ? '' : 'miss'}"><span class="p">+${a.p}</span><span>${esc(a.t)}</span><span class="who">${who ? esc(who) : 'missed'}</span></li>`;
   }).join('') + S.custom.map(c => `<li><span class="p">+1</span><span>${esc(c.text)}</span><span class="who">${esc(c.who)}</span></li>`).join('');
-  const done = alive().length <= 1;
-  $('#nextBtn').textContent = done ? 'See the winner' : 'Next round';
+  const ref = isReferee();
+  $('#nextBtn').textContent = alive().length <= 1 ? 'See the winner' : 'Next round';
+  $('#nextBtn').hidden = !ref;
+  $('#revealWait').hidden = ref;
   $('#reveal').hidden = false;
-  $('#nextBtn').focus();
+  if (ref) $('#nextBtn').focus();
 }
 
 $('#nextBtn').onclick = () => {
-  if (alive().length <= 1) { $('#reveal').hidden = true; gameOver(); return; }
-  S.current = S.players[S.lastLoser].lives > 0 ? S.lastLoser : nextAlive(S.lastLoser);
+  if (!S || S.phase !== 'boom' || !isReferee()) return;
+  if (alive().length <= 1) { S.phase = 'over'; emit({ type: 'over' }); return; }
+  const l = S.players[S.lastLoser];
+  S.current = l.lives > 0 && here(l) ? S.lastLoser : nextAlive(S.lastLoser);
   startRound();
 };
 
-function gameOver() {
-  S.phase = 'over';
+function overView() {
+  cancelAnimationFrame(raf);
+  $('#reveal').hidden = true;
   const w = alive()[0];
   $('#overTitle').textContent = w ? `${w.name}: Model Worker of the Bakery!` : 'Everyone got flaked';
   const ranked = S.players.slice().sort((a, b) => (b.lives > 0) - (a.lives > 0) || b.score - a.score);
   $('#rank').innerHTML = ranked.map(p => `<div><span>${esc(p.name)}${p.lives > 0 ? ' · last one standing' : ''}</span><span>${p.score} pts</span></div>`).join('');
   $('#overStats').textContent = `${S.round} rounds · ${S.totalSaid} pieces of evidence given`;
+  const ref = isReferee();
+  $('#againBtn').hidden = !ref;
+  $('#overWait').hidden = ref;
+  $('#setupBtn').textContent = !NET.on ? 'Change setup' : NET.host ? 'Back to the room' : 'Leave room';
   $('#over').hidden = false;
-  $('#againBtn').focus();
+  (ref ? $('#againBtn') : $('#setupBtn')).focus();
 }
 
-$('#againBtn').onclick = () => { $('#over').hidden = true; startGame(); };
-$('#setupBtn').onclick = () => { $('#over').hidden = true; $('#game').hidden = true; $('#setup').hidden = false; drawPlayers(); };
-$('#quitBtn').onclick = () => { if (S) S.phase = 'over'; cancelAnimationFrame(raf); $('#reveal').hidden = true; $('#game').hidden = true; $('#setup').hidden = false; drawPlayers(); };
+function endGame() {
+  S = null; cancelAnimationFrame(raf);
+  if (NET.on) NET.fb.set(roomRef('state'), null).catch(e => console.error(e));
+  showSetup();
+}
+const leaveOrEnd = () => { if (NET.on && !NET.host) { closeRoom(); netMsg(''); } else endGame(); };
+
+$('#againBtn').onclick = () => { if (isReferee()) startGame(); };
+$('#setupBtn').onclick = leaveOrEnd;
+$('#quitBtn').onclick = leaveOrEnd;
 $('#muteBtn').onclick = () => { snd.on = !snd.on; store.set('sound', snd.on); snd.init(); renderAll(); };
 $('#startBtn').onclick = startGame;
 
