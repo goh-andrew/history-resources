@@ -99,8 +99,7 @@ button { cursor: pointer; }
 .pchip.me .nm::after { content: " (you)"; color: var(--crumb-dim); font-weight: 600; }
 
 /* ---------- game ---------- */
-.topbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
-.pbar { display: flex; gap: 8px; flex-wrap: wrap; }
+.topbar { display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap; }
 .pchip { display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border-radius: 12px; background: var(--tray); border: 2px solid transparent; min-width: 0; transition: border-color .15s, transform .15s; }
 .pchip.on { border-color: var(--butter); transform: translateY(-2px); }
 .pchip.out { opacity: .38; }
@@ -115,12 +114,35 @@ button { cursor: pointer; }
 .prompt h2 { font-size: clamp(20px, 4.4vw, 28px); line-height: 1.15; }
 
 .stage { position: relative; display: grid; place-items: center; padding-block: 4px; }
-.bun-wrap { width: min(62vw, 280px); transform-origin: 50% 70%; will-change: transform; }
+.bun-wrap { transform-origin: 50% 70%; will-change: transform; }
 .bun-wrap svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+/* ---------- the table ---------- */
+.table-wrap { position: relative; width: 100%; max-width: 640px; aspect-ratio: 1.45; margin-block: 6px; }
+.table { position: absolute; inset: 19% 15%; border-radius: 50%;
+  background: radial-gradient(120% 120% at 50% 20%, #8a3a22 0%, #5e2213 55%, #3d140b 100%);
+  box-shadow: 0 22px 34px -14px rgba(0,0,0,.75), inset 0 2px 0 rgba(255,214,170,.25), inset 0 -6px 14px rgba(0,0,0,.45); }
+.table::after { content: ""; position: absolute; inset: 17% 19%; border-radius: 50%;
+  background: radial-gradient(closest-side, #b72a24 0%, #96201c 60%, #74161a 100%);
+  box-shadow: inset 0 3px 12px rgba(0,0,0,.55), 0 1px 0 rgba(255,214,170,.18); }
+.bun-slot { position: absolute; left: 50%; top: 47%; width: 30%; transform: translate(-50%, -50%); z-index: 1; }
+.seat { position: absolute; transform: translate(-50%, -50%); z-index: 2; width: max-content; max-width: 28%; align-items: center; text-align: center; box-shadow: 0 6px 14px -6px rgba(0,0,0,.7); }
+.seat.on { transform: translate(-50%, -50%) scale(1.07); }
+.seat .nm { max-width: 100%; }
+
+/* ---------- turn timer ---------- */
+.timer { position: relative; flex: none; width: 54px; height: 54px; display: grid; place-items: center; }
+.timer svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.timer circle { fill: none; stroke-width: 5; }
+.timer .tr-bg { stroke: var(--tray-2); }
+.timer .tr-fg { stroke: var(--butter); stroke-linecap: round; transition: stroke .3s; }
+.timer.hot .tr-fg { stroke: var(--chili); }
+.timer span { font-family: var(--mono); font-weight: 700; font-size: 15px; color: var(--crumb); }
+.timer.hot span { color: var(--chili); }
 .holder { font-family: var(--display); font-size: clamp(18px, 4vw, 24px); text-align: center; }
 .holder em { font-style: normal; color: var(--butter); }
 
-.answer { display: flex; gap: 8px; }
+.answer { display: flex; gap: 8px; align-items: center; }
 .answer input { flex: 1; min-width: 0; background: var(--tray-2); border: 2px solid var(--tray-2); border-radius: 14px; padding: 14px 16px; font-size: 18px; }
 .answer input:focus { outline: none; border-color: var(--butter); }
 .answer .btn { white-space: nowrap; }
@@ -192,7 +214,13 @@ button { cursor: pointer; }
 .slogan { text-align: center; font-family: var(--display); color: var(--flag); font-size: 13px; letter-spacing: .16em; text-shadow: 0 1px 0 #000; }
 
 @media (max-width: 480px) {
-  .answer { flex-direction: column; }
+  .answer { flex-wrap: wrap; }
+  .answer .btn { flex: 1 0 100%; }
+  .table-wrap { aspect-ratio: 1.12; }
+  .seat { padding: 6px 8px; }
+  .seat .nm { font-size: 13px; }
+  .seat .meta { font-size: 11px; gap: 4px; flex-wrap: wrap; justify-content: center; }
+  .seat .lives svg { width: 15px; height: 11px; }
   .hero { grid-template-columns: 1fr; }
   .hero-bun { justify-self: center; grid-row: 1; }
 }
@@ -235,6 +263,14 @@ button { cursor: pointer; }
     <symbol id="star" viewBox="-1 -1 2 2">
       <polygon points="0,-1 0.2245,-0.309 0.951,-0.309 0.3633,0.118 0.5878,0.809 0,0.382 -0.5878,0.809 -0.3633,0.118 -0.951,-0.309 -0.2245,-0.309"/>
     </symbol>
+    <g id="eyes" stroke="#6b3110" stroke-width="2" fill="#fff">
+      <ellipse cx="88" cy="72" rx="7" ry="8"/>
+      <ellipse cx="112" cy="72" rx="7" ry="8"/>
+    </g>
+    <g id="pupilPair" fill="#1a0b06">
+      <circle cx="88" cy="73" r="3.6"/>
+      <circle cx="112" cy="73" r="3.6"/>
+    </g>
     <symbol id="cap" viewBox="0 0 200 140">
       <g transform="rotate(-7 100 30)" stroke="#2c3614" stroke-width="2.5" stroke-linejoin="round">
         <path d="M62 34 C58 22 60 8 76 5 C88 2 112 2 124 5 C140 8 142 22 138 34 Z" fill="#6f8040"/>
@@ -273,7 +309,9 @@ button { cursor: pointer; }
         <div class="pole r" data-pole></div>
         <svg class="hero-bun" viewBox="0 -20 200 160" aria-hidden="true">
           <use href="#cro"/>
-          <use href="#star" x="88" y="62" width="24" height="24" fill="#de2910"/>
+          <use href="#star" x="92" y="88" width="16" height="16" fill="#de2910"/>
+          <use href="#eyes"/>
+          <use href="#pupilPair"/>
           <use href="#cap"/>
         </svg>
       </div>
@@ -355,7 +393,6 @@ button { cursor: pointer; }
   <section id="game" hidden style="display:flex;flex-direction:column;gap:14px">
     <div class="bunting" data-bunting aria-hidden="true"></div>
     <div class="topbar">
-      <div class="pbar" id="pbar"></div>
       <div style="display:flex;gap:6px">
         <button class="iconbtn" id="muteBtn" type="button">Sound: on</button>
         <button class="iconbtn" id="quitBtn" type="button">Quit</button>
@@ -370,17 +407,29 @@ button { cursor: pointer; }
     <div class="stage">
       <div class="sun"></div>
       <div class="poles" aria-hidden="true"><div class="pole l" data-pole></div><div class="pole r" data-pole></div></div>
-      <div class="bun-wrap" id="bun">
-        <svg viewBox="0 -20 200 160" aria-hidden="true">
-          <use href="#cro"/>
-          <use href="#star" x="88" y="62" width="24" height="24" fill="#de2910"/>
-          <use href="#cap"/>
-        </svg>
+      <div class="table-wrap" id="tableWrap">
+        <div class="table" aria-hidden="true"></div>
+        <div class="bun-slot">
+          <div class="bun-wrap" id="bun">
+            <svg viewBox="0 -20 200 160" aria-hidden="true">
+              <use href="#cro"/>
+              <use href="#star" x="92" y="88" width="16" height="16" fill="#de2910"/>
+              <use href="#eyes"/>
+              <g id="pupils"><use href="#pupilPair"/></g>
+              <use href="#cap"/>
+            </svg>
+          </div>
+        </div>
+        <div id="seats"></div>
       </div>
       <div class="holder" id="holder" aria-live="polite"></div>
     </div>
 
     <form class="answer" id="answerForm" autocomplete="off">
+      <div class="timer" id="timer" title="How long the croissant has been held this turn">
+        <svg viewBox="0 0 44 44" aria-hidden="true"><circle class="tr-bg" cx="22" cy="22" r="19"/><circle class="tr-fg" id="timerArc" cx="22" cy="22" r="19" stroke-dasharray="119.4" stroke-dashoffset="119.4"/></svg>
+        <span id="timerNum">0</span>
+      </div>
       <input id="answerInput" type="text" placeholder="Type your evidence…" aria-label="Your evidence" enterkeyhint="send">
       <button class="btn" type="submit">Pass it</button>
     </form>
@@ -908,7 +957,13 @@ renderSetup();
    it; guests rebuild S from what the host publishes. V remembers what this
    screen has already shown, so each change animates exactly once.        */
 let S = null, raf = 0;
-const V = { gid: '', round: -1, boom: false, over: false, n: 0, holder: -1, roundStart: 0, lastTick: 0 };
+const V = { gid: '', round: -1, boom: false, over: false, n: 0, holder: -1, roundStart: 0, lastTick: 0, turnStart: 0, fx: 0, fy: 1, sec: -1 };
+
+// Seat angle in radians, clockwise from the bottom; online, your own seat is always at the bottom.
+function seatAngle(i) {
+  const n = S.players.length, mine = NET.on ? S.players.findIndex(p => p.cid === ME) : -1;
+  return Math.PI / 2 + (((i - Math.max(mine, 0)) % n + n) % n) * 2 * Math.PI / n;
+}
 
 function startGame() {
   snd.init();
@@ -999,7 +1054,7 @@ function show(ev) {
 }
 
 function roundView() {
-  V.roundStart = V.lastTick = performance.now();
+  V.roundStart = V.lastTick = performance.now(); V.sec = -1;
   $('#bun').style.visibility = 'visible';
   $('#reveal').hidden = $('#over').hidden = true;
   $('#roundLabel').textContent = `Round ${S.round} · ${S.topic.short}`;
@@ -1012,11 +1067,13 @@ function roundView() {
 function renderAll() {
   if (!S) return;
   const h = S.players[S.current], myTurn = !NET.on || h.cid === ME, playing = S.phase === 'play';
-  $('#pbar').innerHTML = S.players.map((p, i) => `
-    <div class="pchip ${i === S.current && playing ? 'on' : ''} ${p.lives <= 0 || !here(p) ? 'out' : ''} ${NET.on && p.cid === ME ? 'me' : ''}">
+  $('#seats').innerHTML = S.players.map((p, i) => {
+    const a = seatAngle(i);
+    return `<div class="pchip seat ${i === S.current && playing ? 'on' : ''} ${p.lives <= 0 || !here(p) ? 'out' : ''} ${NET.on && p.cid === ME ? 'me' : ''}" style="left:${(50 + 37 * Math.cos(a)).toFixed(2)}%;top:${(50 + 40 * Math.sin(a)).toFixed(2)}%">
       <span class="nm">${esc(p.name)}</span>
       <span class="meta"><span class="lives">${[0, 1, 2].map(k => MINI.replace('<svg', `<svg class="${k < p.lives ? '' : 'gone'}"`)).join('')}</span>${p.score} pts</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   $('#holder').innerHTML = `<span class="comrade">★ Comrade ★</span>${NET.on && myTurn ? '<em>You</em> are' : `<em>${esc(h.name)}</em> is`} holding the croissant`;
   const chips = [];
   S.used.forEach((who, id) => { const a = S.topic.a.find(x => x.id === id); if (a) chips.push(`<span class="fchip"><b>+${a.p}</b>${esc(a.t)} <i>${esc(who)}</i></span>`); });
@@ -1027,7 +1084,7 @@ function renderAll() {
   inp.disabled = !(playing && inGame);
   $('#answerForm button').disabled = !(playing && myTurn);
   inp.placeholder = myTurn ? 'Type your evidence…' : inGame ? `${h.name} has it. Get your answer ready…` : mine ? 'You\'re out this game' : 'You\'re watching this game';
-  if (V.holder !== S.current) { V.holder = S.current; if (playing && myTurn) inp.focus(); }
+  if (V.holder !== S.current) { V.holder = S.current; V.turnStart = performance.now(); if (playing && myTurn) inp.focus(); }
   $('#muteBtn').textContent = 'Sound: ' + (snd.on ? 'on' : 'off');
   $('#quitBtn').textContent = !NET.on ? 'Quit' : NET.host ? 'End game' : 'Leave';
 }
@@ -1171,14 +1228,23 @@ $('#answerForm').addEventListener('submit', e => {
 });
 
 /* ===================== LOOP: wobble, tick, explode ===================== */
+const TURN_RING = 15; // seconds for the timer ring to fill; the real fuse stays hidden
 function anim(now) {
   if (!S || S.phase !== 'play') return;
   const heat = Math.min(1, (now - V.roundStart) / 1000 / 22);
+  const a = seatAngle(S.current), ease = reduced ? 1 : 0.12;
+  V.fx += (Math.cos(a) - V.fx) * ease; V.fy += (Math.sin(a) - V.fy) * ease;
+  let r = 0, s = 1;
   if (!reduced) {
     const amp = 2 + heat * 9, sp = 6 + heat * 18;
-    const r = Math.sin(now / 1000 * sp) * amp, s = 1 + Math.sin(now / 1000 * sp * 1.7) * (0.01 + heat * 0.035);
-    $('#bun').style.transform = `rotate(${r}deg) scale(${s})`;
+    r = Math.sin(now / 1000 * sp) * amp; s = 1 + Math.sin(now / 1000 * sp * 1.7) * (0.01 + heat * 0.035);
   }
+  const lean = $('#tableWrap').clientWidth * 0.06;
+  $('#bun').style.transform = `translate(${(V.fx * lean).toFixed(1)}px, ${(V.fy * lean * 0.7).toFixed(1)}px) rotate(${(r + V.fx * 12).toFixed(2)}deg) scale(${s.toFixed(3)})`;
+  $('#pupils').setAttribute('transform', `translate(${(V.fx * 3).toFixed(2)} ${(V.fy * 3).toFixed(2)})`);
+  const held = (now - V.turnStart) / 1000, sec = Math.floor(held);
+  $('#timerArc').style.strokeDashoffset = (119.4 * (1 - Math.min(1, held / TURN_RING))).toFixed(1);
+  if (sec !== V.sec) { V.sec = sec; $('#timerNum').textContent = sec; $('#timer').classList.toggle('hot', held >= 8); }
   const gap = 700 - heat * 420;
   if (now - V.lastTick > gap) { snd.tick(); V.lastTick = now; }
   raf = requestAnimationFrame(anim);
