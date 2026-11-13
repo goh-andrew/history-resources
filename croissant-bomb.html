@@ -508,6 +508,8 @@ const GCSE_TOPICS = [
     { t: 'They attacked moderates like Zhou Enlai ("Criticise Lin, Criticise Confucius", 1974)', p: 5, m: [/confucius|pi lin|criticise lin|zhou ?en ?lai/] },
     { t: 'They were radical, ultra-left Maoists', p: 1, m: [/radical|ultra.?left|left.?wing|extreme/] },
     { t: 'The Cultural Revolution (1966) gave them a platform', p: 1, m: [/cultural revolution|\bcr\b|\b1966\b/] },
+    { t: 'They controlled education and the universities', p: 3, m: [/educat|universit|schools?\b/] },
+    { t: 'The purge of Liu Shaoqi and Deng in the Cultural Revolution removed rivals', p: 5, m: [/liu ?shao ?qi|rivals? (were )?purged|purge\w* (of )?(rivals|liu|deng)/] },
   ]},
   { id: 'g4fall', short: 'Fall of the Gang of Four', q: 'Why did the Gang of Four fall from power in 1976?', a: [
     { t: 'Mao died in September 1976, so they lost their only protector', p: 3, m: [all('\\bmao\\b', 'die|death|dead|protect')] },
@@ -525,6 +527,8 @@ const GCSE_TOPICS = [
     { t: 'They were arrested on 6 October 1976', p: 5, m: [/october|6 oct/] },
     { t: 'Their fall was met with huge public celebrations', p: 3, m: [/celebrat/] },
     { t: 'Mao himself had criticised them in 1974–75', p: 5, m: [/\b197[45]\b|mao (had )?criticis/] },
+    { t: 'Wang Dongxing\'s guard unit (8341) carried out the arrests', p: 5, m: [/wang dong ?xing|8341|guard unit/] },
+    { t: 'They lacked support in the Party, the army and the country', p: 3, m: [/lacked support|isolat|few (allies|supporters)/] },
   ]},
   { id: 'rise', short: 'Rise of Deng', q: 'Why was Deng able to take power after Mao died (1976–78)?', a: [
     { t: 'Mao died in September 1976, leaving a power vacuum', p: 1, m: [all('\\bmao\\b', 'die|death|dead')] },
@@ -550,6 +554,8 @@ const GCSE_TOPICS = [
     { t: 'His reforms had worked after the Great Leap Forward', p: 3, m: [/great leap|\bglf\b/] },
     { t: 'The Gang of Four were hated for the "ten lost years"; their fall was celebrated', p: 3, m: [all('gang|\\bg4\\b', 'unpopular|hated|blamed|celebrat')] },
     { t: 'The Cultural Revolution had failed (the "ten lost years")', p: 1, m: [/cultural revolution|ten lost years|\bcr\b/] },
+    { t: 'Democracy Wall posters criticised Mao\'s mistakes and undermined Hua', p: 3, m: [/democracy wall|dazibao|posters/] },
+    { t: 'His experience and political skill', p: 3, m: [/experien|skil|clever|respected/] },
   ]},
   { id: 'need', short: 'Need for reform', q: 'What evidence shows China\'s economy needed reform by 1978?', a: [
     { t: 'GDP per capita was only $156 in 1978', p: 5, m: [/\b156(?!\d)/] },
@@ -569,6 +575,10 @@ const GCSE_TOPICS = [
     { t: 'Chaos of the Cultural Revolution', p: 1, m: [/cultural revolution|ten lost years|chaos/] },
     { t: 'Long-term damage from the Great Leap Forward famine', p: 1, m: [/great leap|\bglf\b|famine/] },
     { t: 'Hua\'s over-ambitious Ten-Year Plan (1978) relied on heavy industry and costly imports', p: 5, m: [/ten.?year plan|10.?year plan/] },
+    { t: 'The economy was over-centralised and over-planned', p: 3, m: [/central(ly)? plan|over.?central|planned economy|five.?year plan|state control/] },
+    { t: 'Old factories and machines: productivity was low', p: 3, m: [/productiv|obsolete|outdated|old (machines|factories|equipment)/] },
+    { t: 'The Tangshan earthquake (1976) disrupted production', p: 5, m: [/tangshan|earthquake/] },
+    { t: 'The state budget was in deficit', p: 3, m: [/deficit|budget/] },
   ]},
   { id: 'agri', short: 'Agriculture', q: 'Give evidence about Deng\'s changes to agriculture.', a: [
     { t: 'The Household Responsibility System', p: 5, m: [/household responsib|responsibility system|\bhrs\b/] },
@@ -589,6 +599,8 @@ const GCSE_TOPICS = [
     { t: 'It built on Deng and Liu Shaoqi\'s reforms after the Great Leap Forward in the 1960s', p: 3, m: [/\bliu\b|shaoqi|1960s|great leap|\bglf\b/] },
     { t: 'Rural incomes and living standards rose', p: 3, m: [/income|richer|wealth|living standard/] },
     { t: 'Incentives: more work meant more money', p: 1, m: [/incentive|more money|more work|motivat/] },
+    { t: 'Decollectivisation of farming', p: 3, m: [/decollectiv/] },
+    { t: 'In 1979 the state paid about 20% more for crops', p: 5, m: [/higher prices|procurement price|\b20\b|paid more/] },
   ]},
   { id: 'open', short: 'Industry, education & Open Door', q: 'Give evidence about Deng\'s reforms to industry and education, and the Open Door Policy.', a: [
     { t: 'Special Economic Zones (SEZs) were set up in 1980', p: 3, m: [/special economic|\bsezs?\b/] },
@@ -617,6 +629,10 @@ const GCSE_TOPICS = [
     { t: '"Socialism with Chinese characteristics"', p: 5, m: [/chinese characteristics/] },
     { t: 'Joint ventures with foreign companies', p: 5, m: [/joint ventures?/] },
     { t: 'SEZs were placed near Hong Kong, Macau and Taiwan to draw their investment', p: 3, m: [/hong ?kong|macau|macao|taiwan/] },
+    { t: 'Price controls were lifted (1985)', p: 5, m: [/price controls?|price reform|\b1985\b/] },
+    { t: 'Factories could set targets and keep their profits', p: 3, m: [/keep (their )?profits?|profits?\b|targets|autonomy/] },
+    { t: 'Manufacturing output rose', p: 3, m: [/manufactur/] },
+    { t: 'Trade and exports grew', p: 3, m: [/\btrade|exports?/] },
   ]},
   { id: 'ocp', short: 'One Child Policy', q: 'Why was the One Child Policy introduced?', a: [
     { t: 'Population grew from 540 million (1949) to about 1 billion (1980)', p: 5, m: [/\b540(?!\d)/] },
@@ -635,6 +651,7 @@ const GCSE_TOPICS = [
     { t: 'Introduced 1979–80', p: 3, m: [/\b19(79|80)\b/] },
     { t: 'The 1980 Marriage Law raised the marriage age to delay births', p: 5, m: [/marriage (law|age)|late marriage|marry later/] },
     { t: 'The population was growing too fast', p: 1, m: [/population|overpopul|too many people|grow/] },
+    { t: 'To raise living standards and end poverty', p: 3, m: [/living standards?|richer|wealth|poverty/] },
   ]},
   { id: 'ocpfx', short: 'One Child Policy in practice', q: 'How was the One Child Policy enforced, and what were its effects?', a: [
     { t: 'Fines for couples who had more than one child', p: 3, m: [/\bfines?d?\b|penalt/] },
@@ -651,6 +668,8 @@ const GCSE_TOPICS = [
     { t: 'An ageing population with fewer young people to support the elderly ("4-2-1")', p: 5, m: [/ageing|aging|elderly|4.?2.?1|old people/] },
     { t: 'Population growth slowed', p: 3, m: [/slow|reduc|fewer (births|children|people)|birth rate/] },
     { t: 'Some families hid extra children, who went unregistered ("black children")', p: 5, m: [/\bhid|hidden|unregistered|black child|hei ?hai ?zi|no hukou/] },
+    { t: 'A shrinking workforce later on', p: 3, m: [/workforce|labou?r shortage|fewer workers/] },
+    { t: 'Big fines, the "social maintenance fee"', p: 5, m: [/social (maintenance|compensation)/] },
   ]},
   { id: 'polit', short: 'No political reform', q: 'Why did Deng oppose political reform?', a: [
     { t: 'He feared a return to the chaos of the Cultural Revolution', p: 3, m: [/chaos|anarchy|instab|cultural revolution|turmoil|\bluan\b/] },
@@ -669,6 +688,9 @@ const GCSE_TOPICS = [
     { t: 'Campaign against "bourgeois liberalisation" (1987)', p: 5, m: [/liberali[sz]ation/] },
     { t: 'Deng: "Stability overrides everything"', p: 5, m: [/overrides? everything/] },
     { t: 'He did not want China to become capitalist or Western', p: 1, m: [/capitalis|western|bourgeois/] },
+    { t: 'He wanted economic reform without political change', p: 3, m: [/economic (reform|change)s? (but|without|not)|only econom|economic not political/] },
+    { t: 'He feared Western-style, multi-party democracy', p: 3, m: [/western.?style|multi.?party|liberal democracy|pluralis/] },
+    { t: 'He had to keep Party conservatives on side', p: 3, m: [/conservativ|hard.?liners?|old guard|elders/] },
   ]},
   { id: 'demo', short: 'Democracy Movement 1978–79', q: 'What caused the Democracy Movement of 1978–79?', a: [
     { t: 'The "ten lost years" caused a crisis of faith in the CCP', p: 3, m: [/ten lost years|crisis of faith|lost faith|disillusion/] },
@@ -685,6 +707,9 @@ const GCSE_TOPICS = [
     { t: 'Mao\'s death and the Gang of Four\'s fall loosened control', p: 3, m: [/gang of (four|4)|\bg4\b|mao.?s death|mao died/] },
     { t: 'Anger at the Cultural Revolution', p: 1, m: [/cultural revolution|\bcr\b/] },
     { t: 'The Democracy Wall', p: 1, m: [/wall/] },
+    { t: 'Posters criticised the Gang of Four and Mao\'s mistakes', p: 3, m: [/criticis|mao.?s (mistakes|errors)/] },
+    { t: 'The verdict on the April 1976 Tiananmen protests was reversed', p: 5, m: [/tiananmen|reversed|april 1976/] },
+    { t: 'People wanted freedom and human rights', p: 1, m: [/freedom|human rights|rights/] },
   ]},
   { id: 'unrest', short: 'Student unrest 1986–89', q: 'What caused the student unrest of 1986–89?', a: [
     { t: 'Hu Yaobang\'s death in April 1989 sparked mourning protests', p: 5, m: [all('\\bhu\\b|yaobang', 'death|died|dies|funeral|mourn|april')] },
@@ -708,6 +733,8 @@ const GCSE_TOPICS = [
     { t: 'Crowded dorms and poor living conditions on campus', p: 3, m: [/dorm|living conditions|overcrowd|campus/] },
     { t: 'Anger at the 1987 campaign against "bourgeois liberalisation"', p: 3, m: [/liberali[sz]ation/] },
     { t: 'Demands for democracy and a free press', p: 1, m: [/democracy|free press|freedom|free speech/] },
+    { t: 'Resentment of officials\' children, the "princelings"', p: 5, m: [/princeling|children of (officials|leaders)/] },
+    { t: 'Economic reform without political reform', p: 3, m: [/political reform|no political|economic but not/] },
   ]},
   { id: 'tian', short: 'Tiananmen crackdown 1989', q: 'Why did Deng order the crackdown on the Tiananmen Square protesters in 1989?', a: [
     { t: 'The protesters challenged the Four Cardinal Principles', p: 5, m: [/cardinal/] },
@@ -727,6 +754,8 @@ const GCSE_TOPICS = [
     { t: 'Workers formed an independent union, the Beijing Workers\' Autonomous Federation', p: 5, m: [/autonomous|independent union|workers.? (union|federation)/] },
     { t: 'Party elders and President Yang Shangkun backed the hard line', p: 5, m: [/elders|yang shang ?kun|chen yun/] },
     { t: 'Deng: "Stability overrides everything"', p: 5, m: [/overrides? everything/] },
+    { t: 'Protesters refused to leave the square', p: 3, m: [/refus\w* to leave|occup|would not leave|stayed/] },
+    { t: 'He wanted stability to protect the economic reforms', p: 3, m: [/protect (the )?(reforms|economy)|stability|economic growth/] },
   ]},
 ];
 /* ---------- IB HL: China 1861–1949 (from the HL notes) ---------- */
@@ -745,6 +774,12 @@ const IB_TOPICS = [
     { t: 'Officials\' disdain for merchants held back private enterprise', p: 3, m: [/merchant|private enterprise|entrepreneur/] },
     { t: 'Defeat by Japan in 1894–95 exposed the failure', p: 3, m: [/japan|\b189[45]\b|sino.?japanese/] },
     { t: 'Corruption', p: 1, m: [/corrupt|embezzl/] },
+    { t: 'Conservative officials at court opposed it', p: 3, m: [/conservativ|opposed|opposition|resist/] },
+    { t: 'It copied Western technology but left the political system unchanged', p: 3, m: [/political (system|reform|change)|government (system|structure)|no political/] },
+    { t: 'Little reform of education or the exam system', p: 3, m: [/educat|schools?\b|exam system/] },
+    { t: 'Ordinary people distrusted Western novelties', p: 3, m: [/ordinary people|the public|distrust|ignoran|superstiti/] },
+    { t: 'Its new navy, the Beiyang Fleet, was destroyed by Japan', p: 3, m: [/beiyang|fleet|navy (was )?(destroy|sunk|annihilat)/] },
+    { t: 'The Qing government was weak', p: 1, m: [/\bweak|incompeten/] },
   ]},
   { id: 'sjw', short: 'Sino-Japanese War 1894–95', q: 'Why did China lose the First Sino-Japanese War (1894–95)?', a: [
     { t: 'Navy money went on Cixi\'s Summer Palace instead', p: 5, m: [/summer palace|marble boat|navy fund/] },
@@ -761,6 +796,12 @@ const IB_TOPICS = [
     { t: 'Japan sank a Chinese troop ship (the Kowshing), July 1894', p: 5, m: [/kowshing|troop ?ship|sank|sunk/] },
     { t: 'Pro-Japanese Kim Ok-kyun assassinated in Shanghai, March 1894', p: 5, m: [/kim ok|assassinat/] },
     { t: 'Self-Strengthening had failed', p: 1, m: [/self.?strength/] },
+    { t: 'Japan\'s navy was faster, more modern and better armed', p: 3, m: [/faster|better (armed|equipped|ships|guns|navy)|more modern|technolog|superior (navy|fleet|weapons|ships)/] },
+    { t: 'Poor, passive Chinese command and strategy', p: 3, m: [/command|strateg|passive|tactic|leadership/] },
+    { t: 'China was unprepared; morale was low and some commanders fled', p: 3, m: [/unprepared|morale|fled|desert|coward/] },
+    { t: 'Outdated weapons and poorly trained troops', p: 3, m: [/outdated|obsolete|training|untrained|badly trained|poorly trained/] },
+    { t: 'Rivalry between Li Hongzhang and Manchu officials', p: 3, m: [/rivalr|faction|manchu/] },
+    { t: 'Corruption in the Qing state and military', p: 1, m: [/corrupt/] },
   ]},
   { id: 'after95', short: 'After 1895: the scramble', q: 'What were the consequences of the Sino-Japanese War for China (1895–1900)?', a: [
     { t: 'Treaty of Shimonoseki, April 1895', p: 3, m: [/shimonoseki/] },
@@ -777,6 +818,13 @@ const IB_TOPICS = [
     { t: 'US Open Door Notes (John Hay, 1899)', p: 5, m: [/open door|john hay|\bhay\b|1899/] },
     { t: 'Japan won Western-style trading rights, plus the right to build factories', p: 3, m: [/manufactur|factor|commercial treaty|trading rights/] },
     { t: 'It sparked demands for reform (the Hundred Days)', p: 3, m: [/reform|hundred days|\bkang\b/] },
+    { t: 'Defeat exposed China as weak and humiliated', p: 3, m: [/\bweak|exposed|humiliat/] },
+    { t: 'China was carved into foreign spheres of influence', p: 3, m: [/spheres? of influence/] },
+    { t: 'More treaty ports were opened to foreign trade', p: 3, m: [/treaty ports?|ports? (were )?opened/] },
+    { t: 'Heavy debts: China borrowed abroad to pay the indemnity', p: 3, m: [/\bloans?\b|debts?|borrow/] },
+    { t: 'Rising nationalism and anger at foreigners', p: 3, m: [/nationalis|anger|resent|anti.?foreign/] },
+    { t: 'It helped cause the Boxer Rebellion', p: 3, m: [/boxer/] },
+    { t: 'Japan replaced China as the leading power in East Asia', p: 3, m: [/leading power|dominan|great power|east asia/] },
   ]},
   { id: 'hundred', short: 'Hundred Days\' Reform 1898', q: 'Why did the Hundred Days\' Reform (1898) fail?', a: [
     { t: 'Cixi\'s coup on 21 September 1898', p: 5, m: [/coup|21 september|september 1898/] },
@@ -784,12 +832,17 @@ const IB_TOPICS = [
     { t: 'Guangxu was put under palace arrest', p: 3, m: [/guangxu|arrest|detention|yingtai/] },
     { t: 'Six reformers were executed ("Six Gentlemen")', p: 5, m: [/six (gentlemen|martyrs|reformers|advisers)|execut/] },
     { t: 'Kang Youwei and Liang Qichao fled abroad', p: 3, m: [/\bkang\b|youwei|liang qi ?chao|fled/] },
-    { t: 'Too much too fast: 40–50 decrees in 103 days', p: 5, m: [/\b10[03]\b|too (fast|quick|sudden|much)|decrees/] },
+    { t: 'Too much too fast: 40–50 decrees in 103 days', p: 5, m: [/\b10[03]\b|too (fast|quick|sudden|much)|(\b40|\b50|many|so many|too many) decrees/] },
     { t: 'The reformers were young and inexperienced', p: 3, m: [/young|inexperien/] },
     { t: 'Scrapping sinecures threatened officials and Manchu bannermen', p: 3, m: [/bannerm|sinecure|privilege|lost (their )?jobs/] },
     { t: 'Abolishing the eight-legged essay angered the scholar-officials', p: 5, m: [/eight.?legged/] },
     { t: 'Yuan Shikai betrayed the plot to Ronglu; conservatives claimed Guangxu would kill Cixi', p: 5, m: [/yuan shi ?kai|ronglu|jung.?lu|betray|kill (cixi|her)/] },
     { t: 'The reformers had no army; real power lay with Cixi', p: 3, m: [/military|army|real power/] },
+    { t: 'Conservative officials opposed the reforms', p: 3, m: [/conservativ|elite|opposed|opposition/] },
+    { t: 'Guangxu had little real power', p: 3, m: [/little (real )?power|powerless|weak emperor/] },
+    { t: 'Most provinces ignored the decrees; only Hunan acted on them', p: 5, m: [/provinc|ignored|hunan|implement/] },
+    { t: 'Weng Tonghe, the emperor\'s tutor and ally, was dismissed', p: 5, m: [/weng tong ?he/] },
+    { t: 'Reform was imposed from above, with no popular support', p: 3, m: [/top.?down|from above|by decree|popular support|no support/] },
   ]},
   { id: 'boxcause', short: 'Boxer Rebellion: causes', q: 'What caused the Boxer Rebellion (1898–1901)?', a: [
     { t: 'Anger at Christian missionaries and their converts', p: 3, m: [/missionar|christian|convert|church/] },
@@ -804,6 +857,12 @@ const IB_TOPICS = [
     { t: 'Slogan: "Support the Qing, destroy the foreigners"', p: 5, m: [/support the qing|destroy the foreign|fu ?qing|mie ?yang/] },
     { t: 'The failure of the 1898 reforms left conservatives in charge', p: 3, m: [/\b1898\b|hundred days/] },
     { t: 'Poor, young peasants joined', p: 1, m: [/\bpoor\b|poverty|peasant/] },
+    { t: 'Foreign imperialism and unequal treaties', p: 3, m: [/imperialis|unequal treat|foreign (control|influence|domination)/] },
+    { t: 'Economic hardship and hunger in the north', p: 3, m: [/hardship|famine|hunger|starv|econom/] },
+    { t: 'Hatred of foreigners', p: 3, m: [/hatred|hate|anti.?foreign|xenophob|resent/] },
+    { t: 'Humiliation after the defeat by Japan (1895)', p: 3, m: [/humiliat|japan|\b1895\b/] },
+    { t: 'Boxers believed martial arts and rituals gave them magic powers', p: 3, m: [/martial arts?|magic|spirits?\b|rituals?|kung ?fu/] },
+    { t: 'The Society of Righteous and Harmonious Fists, a secret society', p: 5, m: [/righteous|harmonious fists?|yihequan|secret societ/] },
   ]},
   { id: 'boxresult', short: 'Boxer Rebellion: results', q: 'What were the consequences of the Boxer Rebellion?', a: [
     { t: 'The Boxer Protocol, September 1901', p: 3, m: [/protocol|\b1901\b/] },
@@ -819,6 +878,12 @@ const IB_TOPICS = [
     { t: 'Support shifted to Sun Yat-sen\'s revolutionaries', p: 3, m: [/\bsun\b|revolution|tong ?meng ?hui/] },
     { t: 'It forced the Qing into the New Policy reforms', p: 3, m: [/qing reforms?|new polic|xinzheng|reform/] },
     { t: 'The dynasty lost huge prestige', p: 1, m: [/prestige|weak|discredit/] },
+    { t: 'A huge indemnity (reparations)', p: 3, m: [/indemnit|reparation|compensat/] },
+    { t: 'Russia occupied Manchuria', p: 5, m: [/manchuria|russia/] },
+    { t: 'More foreign control over China', p: 3, m: [/foreign (control|influence|domination)|imperialis/] },
+    { t: 'The powers chose not to partition China', p: 3, m: [/partition|carve up|open door/] },
+    { t: 'Anti-foreign feeling turned into modern nationalism', p: 3, m: [/nationalis/] },
+    { t: 'It led towards the fall of the dynasty in 1911', p: 3, m: [/\b1911\b|downfall|collapse|fall of the (qing|dynasty)/] },
   ]},
   { id: 'xinhai', short: '1911 Revolution', q: 'Why did the 1911 Revolution break out?', a: [
     { t: 'Railway Protection Movement: Sichuan railways nationalised (May 1911) and sold to foreign banks', p: 5, m: [/railway|sichuan|szechwan/] },
@@ -831,11 +896,18 @@ const IB_TOPICS = [
     { t: '"Prince\'s Cabinet" of May 1911: 8 Manchus, 4 Han Chinese', p: 5, m: [/cabinet|royal|prince/] },
     { t: 'The 1908 constitution outline set a 9-year wait', p: 5, m: [/\b9\b|nine.?year|outline|\b1908\b/] },
     { t: 'Provincial assemblies (1909) gave critics a platform', p: 5, m: [/assembl|\b1909\b/] },
-    { t: 'Qing reforms raised expectations but strengthened the Manchus', p: 3, m: [/qing reform|manchu|\bhan\b/] },
+    { t: 'Qing reforms raised expectations but strengthened the Manchus', p: 3, m: [/qing reform|expectations|strengthen\w* the manchus?|reforms? (helped|favou?red|strengthened)/] },
     { t: 'New classes (students, compradors, militarists) were hostile to the Qing', p: 3, m: [/comprador|student|militarist|new class/] },
     { t: 'Floods and famine in the Yangtze valley in 1911', p: 3, m: [/flood|famine|yangtze/] },
     { t: 'Debts and indemnities from foreign wars', p: 3, m: [/indemnit|debt/] },
     { t: 'Cixi died in 1908, leaving a child emperor, Puyi', p: 3, m: [/puyi|child emperor|cixi/] },
+    { t: 'The Qing dynasty was weak, corrupt and decaying', p: 1, m: [/\bweak|decay|corrupt|declin|incompeten/] },
+    { t: 'Humiliation by foreign powers and the unequal treaties', p: 3, m: [/humiliat|unequal treat|foreign (powers|influence|control|domination)|imperialis/] },
+    { t: 'Economic hardship: heavy taxes and poverty', p: 3, m: [/hardship|\btax|poverty|econom/] },
+    { t: 'Han Chinese resented rule by the foreign Manchus', p: 3, m: [/resent|anti.?manchu|foreign dynasty|han chinese/] },
+    { t: 'Defeats by Japan and the Boxer humiliation', p: 3, m: [/boxer|japan|defeat/] },
+    { t: 'Revolutionary ideas spread through students educated abroad', p: 3, m: [/abroad|students? (in|from) japan|western ideas|revolutionary ideas|new ideas/] },
+    { t: 'Provinces declared independence one after another', p: 3, m: [/independen|seced|declared/] },
   ]},
   { id: 'yuan', short: 'Yuan Shikai & warlordism', q: 'Why did the Republic fail and warlordism follow (1912–16)?', a: [
     { t: 'Song Jiaoren was assassinated (March 1913)', p: 5, m: [/song ?jiao ?ren|assassinat/] },
@@ -851,6 +923,11 @@ const IB_TOPICS = [
     { t: 'Provincial armies and military academies (1901–09) bred warlords', p: 3, m: [/academ|provinc|decentral/] },
     { t: 'China had no democratic tradition', p: 3, m: [/tradition|confuci|autocra/] },
     { t: 'Yuan Shikai ruled as a military strongman', p: 1, m: [/\byuan\b|military|dictator/] },
+    { t: 'Yuan was an authoritarian who wanted personal power', p: 3, m: [/authoritar|personal power|ambiti|power.?hungry/] },
+    { t: 'The republic was weak from the start, with no money', p: 3, m: [/weak (republic|government|institutions|constitution)|no money|bankrupt|financ/] },
+    { t: 'Sun Yat-sen handed the presidency to Yuan in 1912', p: 3, m: [/handed|stepped down|gave up|president/] },
+    { t: 'Armies were loyal to their own commanders, not the state', p: 3, m: [/loyal|personal armies|private armies/] },
+    { t: 'China split between north and south', p: 3, m: [/north.?south|divided|split|fragment/] },
   ]},
   { id: 'warlords', short: 'Effects of warlordism', q: 'What were the effects of warlordism (1916–28)?', a: [
     { t: 'Taxes on peasants rose up to five-fold', p: 5, m: [/five.?fold|5 ?times|five times/] },
@@ -867,6 +944,12 @@ const IB_TOPICS = [
     { t: 'Foreign loans, e.g. the Nishihara loans (145m yen)', p: 5, m: [/nishihara|\b145\b|foreign loan/] },
     { t: 'It fuelled nationalism and new ideas (May 4th, the CCP)', p: 3, m: [/may (4|fourth)|nationalis|\bccp\b|communis/] },
     { t: 'Violence and suffering for ordinary people', p: 1, m: [/violen|suffer|peasant|chaos/] },
+    { t: 'China was divided, with no strong central government', p: 3, m: [/divided|fragment|no (central|strong) government|disunit|split/] },
+    { t: 'Peasants were conscripted or forced to work for armies', p: 3, m: [/conscript|forced (labou?r|to fight|to work)/] },
+    { t: 'Banditry spread', p: 3, m: [/bandit/] },
+    { t: 'Trade and farming were disrupted', p: 3, m: [/econom|trade|disrupt|farming/] },
+    { t: 'Foreign powers, especially Japan, took advantage', p: 3, m: [/japan|foreign (influence|power|interference)|took advantage/] },
+    { t: 'It led to the rise of the GMD and the Northern Expedition', p: 3, m: [/northern expedition|\bgmd\b|guomindang|\bkmt\b/] },
   ]},
   { id: 'may4', short: 'May Fourth Movement 1919', q: 'What caused the May Fourth Movement (1919), and what did it lead to?', a: [
     { t: 'The Treaty of Versailles gave Germany\'s Shandong rights to Japan', p: 5, m: [/versailles|shandong|qingdao/] },
@@ -883,6 +966,12 @@ const IB_TOPICS = [
     { t: 'Interest in Marxism after 1917; the Karakhan Manifesto (1919)', p: 5, m: [/marx|bolshevik|\b1917\b|karakhan|lenin/] },
     { t: 'China refused to sign the Treaty of Versailles', p: 3, m: [/refus|sign/] },
     { t: 'Anger at the warlord government', p: 1, m: [/warlord|government/] },
+    { t: 'Anger at Japan: anti-Japanese nationalism', p: 3, m: [/japan|nationalis|patriot/] },
+    { t: 'Rejection of Confucianism and traditional values', p: 3, m: [/confuci|tradition/] },
+    { t: '"Mr Science" and "Mr Democracy"', p: 5, m: [/mr\.? (science|democracy)|science and democracy/] },
+    { t: 'China\'s first mass, student-led patriotic movement', p: 3, m: [/students?|protest|demonstrat/] },
+    { t: 'It revived Sun Yat-sen\'s GMD', p: 3, m: [/\bgmd\b|guomindang|\bkmt\b|sun yat/] },
+    { t: 'New ideas about women\'s rights and the family', p: 3, m: [/women|family|marriage/] },
   ]},
   { id: 'uf1', short: 'First United Front 1923–27', q: 'Why was the First United Front formed, and why did it collapse?', a: [
     { t: 'Sun was desperate: appeals to the West and Japan had failed', p: 3, m: [/\bwest|desperat|japan/] },
@@ -900,6 +989,12 @@ const IB_TOPICS = [
     { t: 'The Green Gang (Du Yuesheng) helped Jiang attack the unions', p: 5, m: [/green gang|du yue ?sheng|tu yueh|triad/] },
     { t: 'Rival governments: the left at Wuhan, Jiang at Nanjing', p: 5, m: [/wuhan|nanjing government/] },
     { t: 'Jiang no longer needed the CCP: it was an alliance of convenience', p: 3, m: [/convenien|no longer need|anti.?communis/] },
+    { t: 'Both wanted to defeat the warlords and unify China', p: 3, m: [/warlord|unif|common (enemy|aim|goal)/] },
+    { t: 'Both opposed foreign imperialism', p: 3, m: [/imperialis/] },
+    { t: 'Their ideologies clashed: nationalism against communism', p: 3, m: [/ideolog|different (aims|goals|beliefs)|opposing|clash/] },
+    { t: 'GMD landlords and businessmen feared CCP peasant and worker movements', p: 3, m: [/landlord|business|peasant|worker|union|strike/] },
+    { t: 'The CCP grew fast inside the GMD: about 300 members (1922) to 58,000 (1927)', p: 5, m: [/58,?000|\b300\b/] },
+    { t: 'Jiang Jieshi turned against the CCP', p: 1, m: [/chiang|jiang/] },
   ]},
   { id: 'nanjing', short: 'Nanjing Decade 1927–37', q: 'How successful was Jiang Jieshi\'s Nanjing Decade (1927–37)?', a: [
     { t: 'Railways grew from 8,000 km to 13,000 km', p: 5, m: [/\b8,?000\b|\b13,?000\b|railway/] },
@@ -918,6 +1013,13 @@ const IB_TOPICS = [
     { t: 'Rival warlords fought him in the Central Plains War (1930)', p: 5, m: [/central plains|\b1930\b|warlord/] },
     { t: 'Corruption and cronyism (the Soong and Kong families)', p: 3, m: [/corrupt|four families|soong|kong|cron/] },
     { t: 'December 9th student protests (1935) against appeasing Japan', p: 5, m: [/december 9|9 december|ninth/] },
+    { t: 'More stable and unified than the warlord era', p: 3, m: [/stab|unif|unit(y|ed)/] },
+    { t: 'Roads, post and communications improved', p: 3, m: [/roads?\b|infrastructure|telegraph|telephone|\bpost\b|communicat/] },
+    { t: 'Political tutelage: one-party GMD rule', p: 5, m: [/tutelage/] },
+    { t: 'Jiang ruled as a dictator and democracy never came', p: 3, m: [/dictator|one.?party|undemocratic|democra/] },
+    { t: 'The gap between cities and countryside widened', p: 3, m: [/urban|rural|cities|countryside/] },
+    { t: 'The economy grew about 4% a year', p: 3, m: [/growth|grew|gdp/] },
+    { t: '"Internal pacification first": he fought the CCP before Japan', p: 5, m: [/internal (pacification|enem)|pacification first|first internal/] },
   ]},
   { id: 'ccp27', short: 'CCP survival 1927–36', q: 'How did the CCP survive between 1927 and 1936?', a: [
     { t: 'Mao and Zhu De built the Jiangxi Soviet (Ruijin)', p: 5, m: [/jiangxi|ruijin|soviet|zhu ?de/] },
@@ -930,12 +1032,18 @@ const IB_TOPICS = [
     { t: 'About 86,000 set out; roughly 1 in 10 arrived', p: 5, m: [/\b86|\b90,?000|one in ten|1 in 10|\b8,?000|\b20,?000/] },
     { t: 'The Zunyi Conference (January 1935) put Mao in charge', p: 5, m: [/zunyi/] },
     { t: 'Crossing the Luding Bridge over the Dadu River', p: 5, m: [/luding|dadu|bridge/] },
-    { t: 'The Great Snowy Mountains and the marshlands', p: 5, m: [/snow|mountain|marsh|grassland/] },
+    { t: 'The Great Snowy Mountains and the marshlands', p: 5, m: [/snow|marsh|grassland|cross\w* (the )?mountains/] },
     { t: 'A new base at Yan\'an in Shaanxi', p: 3, m: [/yan.?an|shaanxi|yenan/] },
     { t: 'The Long March became powerful propaganda', p: 3, m: [/propaganda|legend|myth/] },
     { t: 'Xi\'an Incident, December 1936: Zhang Xueliang kidnapped Jiang', p: 5, m: [/xi.?an incident|zhang xue ?liang|young marshal|kidnap|december 1936/] },
     { t: 'The Second United Front ended the encirclement campaigns', p: 3, m: [/united front/] },
     { t: 'Stalin wanted Jiang freed to lead the fight against Japan', p: 5, m: [/stalin|soviet/] },
+    { t: 'Mao\'s first base in the Jinggang Mountains (1927)', p: 5, m: [/jinggang/] },
+    { t: 'Remote bases were hard to attack', p: 3, m: [/remote|isolated|hard to (attack|reach)|terrain/] },
+    { t: 'Political education and discipline kept the army together', p: 3, m: [/discipline|political education|indoctrinat|morale/] },
+    { t: 'The CCP escaped Jiang\'s encirclement', p: 3, m: [/escape|broke out|retreat/] },
+    { t: 'Jiang was distracted by Japan (Manchuria, 1931)', p: 3, m: [/japan|manchuria|\b1931\b/] },
+    { t: 'Mao\'s leadership', p: 1, m: [/\bmao\b|leadership/] },
   ]},
   { id: 'war', short: 'War with Japan 1937–45', q: 'How did the war with Japan (1937–45) strengthen the CCP and weaken the GMD?', a: [
     { t: 'The GMD lost Shanghai and the coast, and their tax revenue', p: 3, m: [/shanghai|coast|revenue|\btax/] },
@@ -958,6 +1066,13 @@ const IB_TOPICS = [
     { t: 'The US Dixie Mission to Yan\'an (July 1944)', p: 5, m: [/dixie/] },
     { t: 'The New Fourth Army Incident (January 1941) ended real cooperation', p: 5, m: [/new (fourth|4th)|anhui incident|\b1941\b/] },
     { t: 'Self-sufficiency in Yan\'an (about 40% of needs by 1945)', p: 5, m: [/self.?suffic|garrison|nanniwan/] },
+    { t: 'The CCP looked like patriotic defenders of China', p: 3, m: [/patriot|nationalis|defenders?|legitima/] },
+    { t: 'The GMD army was exhausted by the war', p: 3, m: [/exhaust|worn out|weakened (army|troops)/] },
+    { t: 'GMD corruption and inefficiency grew', p: 3, m: [/corrupt|inefficien|incompeten/] },
+    { t: 'The war stopped Jiang destroying the CCP', p: 3, m: [/annihilat|destroy|breathing space|saved the ccp/] },
+    { t: 'The Second United Front (1937)', p: 3, m: [/united front/] },
+    { t: 'CCP guerrilla warfare behind Japanese lines', p: 3, m: [/guerr?ill?a|behind (enemy|japanese) lines/] },
+    { t: 'US aid went to the GMD but much was wasted', p: 3, m: [/\bus\b|america|lend.?lease|\baid\b/] },
   ]},
 ];
 /* ---------- Historians (IB): name + argument = 8 points ---------- */
@@ -1572,12 +1687,51 @@ function correct(tp, raw) {
     return best;
   }).join(' ');
 }
+/* Synonyms: rewrite common alternative wordings into the bank's own words.
+   Both the original and the rewritten answer are tested, so this only ever adds matches. */
+const SYN = [
+  // names and spellings
+  [/\bchiang( kai ?shek| kaishek| jieshi)?\b/g, 'jiang jieshi'], [/\bsun (yixian|zhongshan)\b/g, 'sun yat sen'],
+  [/\bmao (zedong|tse ?tung)|chairman mao\b/g, 'mao'], [/\btzu ?hsi\b/g, 'cixi'], [/\byuan shih ?kai\b/g, 'yuan shikai'],
+  [/\bli hung ?chang\b/g, 'li hongzhang'], [/\bkang yu ?wei\b/g, 'kang youwei'], [/\bkuang ?hsu\b/g, 'guangxu'],
+  [/\bpeking\b/g, 'beijing'], [/\bnanking\b/g, 'nanjing'], [/\bkiangsi\b/g, 'jiangxi'], [/\bszech?wan\b|\bszechuan\b/g, 'sichuan'],
+  [/\bch ?ing\b|\bmanchu dynasty\b/g, 'qing'],
+  [/\bkuomintang\b|\bnationalists\b|\bnationalist party\b/g, 'gmd'],
+  [/\b(chinese )?communist party\b|\bthe communists\b/g, 'ccp'],
+  [/\bsoviet union\b|\bsoviets\b/g, 'ussr'], [/\bone child\b/g, 'one child policy'],
+  // people
+  [/\b(farmers?|villagers|rural (people|poor|population)|country people)\b/g, 'peasants'],
+  [/\b(labou?rers|factory workers)\b/g, 'workers'], [/\b(soldiers|troops)\b/g, 'army'],
+  [/\b(king|monarch)\b/g, 'emperor'], [/\bwesterners|western powers|foreigners|outsiders\b/g, 'foreign powers'],
+  // descriptions
+  [/\b(feeble|frail|fragile|ineffective|ineffectual|powerless)\b/g, 'weak'],
+  [/\b(crumbling|rotten|rotting|falling apart)\b/g, 'decaying'],
+  [/\b(bribes?|bribery|graft|embezzl\w*)\b/g, 'corrupt'],
+  [/\b(embarrass\w*|shamed|disgraced|loss of face|humbled)\b/g, 'humiliated'],
+  [/\b(impoverished|destitute|penniless)\b/g, 'poor'], [/\b(starvation|mass hunger)\b/g, 'famine'],
+  [/\b(levies|levy|taxation)\b/g, 'tax'], [/\b(cash|funding|finances)\b/g, 'money'],
+  [/\b(jobless|out of work|no jobs)\b/g, 'unemployment'],
+  [/\b(cost of living|prices (went|shot) up|rising prices)\b/g, 'inflation'],
+  [/\b(liberty|liberties)\b/g, 'freedom'], [/\bfreedom of (speech|expression)\b/g, 'free speech'],
+  [/\b(disliked|loathed|despised)\b/g, 'hated'],
+  // actions
+  [/\b(topple[ds]?|bring down|brought down|oust(ed)?|depose[ds]?)\b/g, 'overthrow'],
+  [/\b(murdered|slaughtered)\b/g, 'killed'], [/\b(put to death|beheaded)\b/g, 'executed'],
+  [/\b(jailed|imprisoned|detained|locked up)\b/g, 'arrested'],
+  [/\b(demonstrations?|demos|rallies|rally|marches)\b/g, 'protests'],
+  [/\b(went up|shot up|soared|skyrocketed|boomed|increased)\b/g, 'rose'],
+  [/\b(went down|plummeted|plunged|dropped|decreased)\b/g, 'fell'],
+  [/\b(gave up the throne|stepped down as emperor)\b/g, 'abdicated'],
+  [/\bmoderniz/g, 'modernis'], [/\blabor\b/g, 'labour'],
+];
+const syn = s => SYN.reduce((t, [re, to]) => t.replace(re, to), s);
+
 function findHits(tp, raw) {
   prep(tp);
-  const n = norm(raw), c = ' ' + correct(tp, raw) + ' ';
-  const hits = tp.a.filter(a => a.m.some(r => r.test(n) || r.test(c)));
+  const n = norm(raw), c = ' ' + correct(tp, raw) + ' ', ns = syn(n), cs = syn(c);
+  const hits = tp.a.filter(a => a.m.some(r => r.test(n) || r.test(c) || r.test(ns) || r.test(cs)));
   if (hits.some(a => !S.used.has(a.id))) return hits;
-  const mine = [...new Set(c.trim().split(' ').filter(w => !STOP.has(w) && (w.length >= 3 || /\d/.test(w))).map(stem))];
+  const mine = [...new Set((c + cs).trim().split(/ +/).filter(w => !STOP.has(w) && (w.length >= 3 || /\d/.test(w))).map(stem))];
   const named = HIST_RE.test(c);
   const scored = tp.a.filter(a => !a.h || named).map(a => {
     const shared = mine.filter(s => a.sig.has(s));
