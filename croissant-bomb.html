@@ -128,7 +128,7 @@ button { cursor: pointer; }
 .bun-slot { position: absolute; left: 50%; top: 47%; width: 30%; transform: translate(-50%, -50%); z-index: 1; }
 .seat { position: absolute; transform: translate(-50%, -50%); z-index: 2; width: max-content; max-width: 28%; align-items: center; text-align: center; box-shadow: 0 6px 14px -6px rgba(0,0,0,.7); }
 .seat.on { transform: translate(-50%, -50%) scale(1.07); }
-.bubble { position: absolute; left: 50%; bottom: calc(100% + 9px); transform: translateX(-50%); width: max-content; max-width: 200px;
+.bubble { position: absolute; left: 50%; bottom: calc(100% + 9px); transform: translateX(-50%); width: max-content; max-width: min(240px, 60vw);
   padding: 5px 11px; border-radius: 12px; background: var(--crumb); color: #2a1206; font-family: var(--body); font-size: 13px; font-weight: 600;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 4px 10px -4px rgba(0,0,0,.6); pointer-events: none; z-index: 3; }
 .bubble::after { content: ""; position: absolute; left: 50%; top: 100%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--crumb); }
@@ -137,6 +137,9 @@ button { cursor: pointer; }
 .seat.on .bubble { background: var(--butter); }
 .seat.on .bubble::after { border-top-color: var(--butter); }
 .seat.on .bubble.below::after { border-top-color: transparent; border-bottom-color: var(--butter); }
+.seat .bubble.said, .seat.on .bubble.said { background: var(--tray-2); color: var(--butter); font-family: var(--mono); font-weight: 700; font-size: 13px; border: 1px solid rgba(240, 181, 60, .35); }
+.seat .bubble.said::after, .seat.on .bubble.said::after { border-top-color: var(--tray-2); }
+.seat .bubble.said.below::after, .seat.on .bubble.said.below::after { border-top-color: transparent; border-bottom-color: var(--tray-2); }
 .seat .nm { max-width: 100%; }
 
 /* ---------- turn timer ---------- */
@@ -1495,12 +1498,17 @@ function sendTyping() {
 }
 $('#answerInput').addEventListener('input', sendTyping);
 
+// Each seat shows the holder's live typing, otherwise that player's accepted answer this round.
 function drawBubbles() {
+  if (!S) return;
   document.querySelectorAll('.seat').forEach(seat => {
-    const b = seat.querySelector('.bubble'), cid = seat.dataset.cid;
-    const holder = S && S.players[S.current];
-    const t = NET.on && cid !== ME && holder && S.phase === 'play' && holder.cid === cid ?String(NET.typing[cid] || '') : '';
-    b.textContent = t; b.hidden = !t;
+    const i = +seat.dataset.i, p = S.players[i], b = seat.querySelector('.bubble');
+    if (!p) return;
+    const live = NET.on && p.cid !== ME && S.phase === 'play' && i === S.current ? String(NET.typing[p.cid] || '') : '';
+    const said = (S.said && S.said[i]) || '';
+    b.textContent = live || said;
+    b.hidden = !(live || said);
+    b.classList.toggle('said', !live && !!said);
   });
 }
 
@@ -1594,7 +1602,7 @@ function nextTopic() {
 }
 
 function startRound() {
-  S.round++; S.topic = nextTopic(); S.q = pickQuestion(S.topic); S.used = new Map(); S.custom = []; S.pending = null;
+  S.round++; S.topic = nextTopic(); S.q = pickQuestion(S.topic); S.used = new Map(); S.custom = []; S.pending = null; S.said = {};
   S.fuseEnd = performance.now() + rand(S.fuse[0], S.fuse[1]) * 1000;
   S.phase = 'play';
   emit({ type: 'round' });
@@ -1623,6 +1631,7 @@ function publish() {
     players: S.players.map(p => ({ name: p.name, cid: p.cid, lives: p.lives, score: p.score, bank: p.bank || 0 })),
     used: [...S.used].map(([id, who]) => ({ id, who })),
     custom: S.custom, pending: S.pending, ev: S.ev,
+    said: Object.fromEntries(Object.entries(S.said || {}).map(([i, t]) => ['p' + i, t])),
   }).catch(e => console.error(e));
 }
 
@@ -1636,6 +1645,7 @@ function receive(s) {
     players: Object.values(s.players || {}),
     used: new Map(Object.values(s.used || {}).map(u => [u.id, u.who])),
     custom: Object.values(s.custom || {}), pending: s.pending || null,
+    said: Object.fromEntries(Object.entries(s.said || {}).map(([k, t]) => [+k.slice(1), String(t)])),
   };
   show(s.ev || {});
 }
@@ -1666,7 +1676,7 @@ function renderAll() {
   const h = S.players[S.current], myTurn = !NET.on || h.cid === ME, playing = S.phase === 'play';
   $('#seats').innerHTML = S.players.map((p, i) => {
     const a = seatAngle(i);
-    return `<div class="pchip seat ${i === S.current && playing ? 'on' : ''} ${p.lives <= 0 || !here(p) ? 'out' : ''} ${NET.on && p.cid === ME ? 'me' : ''}" data-cid="${esc(p.cid)}" style="left:${(50 + 37 * Math.cos(a)).toFixed(2)}%;top:${(50 + 40 * Math.sin(a)).toFixed(2)}%">
+    return `<div class="pchip seat ${i === S.current && playing ? 'on' : ''} ${p.lives <= 0 || !here(p) ? 'out' : ''} ${NET.on && p.cid === ME ? 'me' : ''}" data-i="${i}" style="left:${(50 + 37 * Math.cos(a)).toFixed(2)}%;top:${(50 + 40 * Math.sin(a)).toFixed(2)}%">
       <span class="bubble ${Math.sin(a) < -0.2 ? 'below' : ''}" hidden></span>
       <span class="nm">${esc(p.name)}</span>
       <span class="meta"><span class="lives">${Array.from({ length: Math.max(3, p.lives) }, (_, k) => MINI.replace('<svg', `<svg class="${k < p.lives ? '' : 'gone'}"`)).join('')}</span>${p.score} pts</span>
@@ -1794,6 +1804,7 @@ function judge(raw) {
   if (fresh.length) {
     const a = fresh[0];
     S.used.set(a.id, me.name); const life = addPoints(me, a.p); S.totalSaid++; S.pending = null;
+    S.said[S.current] = raw.slice(0, 60);
     passOn();
     emit({ type: 'good', pts: a.p, text: a.t, who: me.name, cid: me.cid, tier: a.h ? 'h' : a.n ? 'n' : '', life });
   } else if (hits.length) {
@@ -1815,6 +1826,7 @@ function handleAction(a, from) {
     if (NET.on && (holder.cid === from || !S.players.some(p => p.cid === from))) return;
     const text = S.pending.text;
     S.custom.push({ text, who: holder.name }); const life = addPoints(holder, 1); S.totalSaid++; S.pending = null;
+    S.said[S.current] = text.slice(0, 60);
     passOn();
     emit({ type: 'count', text, who: holder.name, life });
   }
