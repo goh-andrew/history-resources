@@ -80,7 +80,7 @@ button { cursor: pointer; }
 .pk { font-family: var(--mono); font-size: 12px; padding: 4px 9px; border-radius: 99px; background: var(--tray-2); }
 .pk b { color: var(--butter); }
 .start-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.start-row .btn { font-size: 20px; padding: 14px 28px; }
+.start-row .btn { flex: 1 1 100%; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 24px; padding: 18px 28px; border-radius: 16px; }
 .btn:disabled { opacity: .45; cursor: default; transform: none; }
 
 /* ---------- online room ---------- */
@@ -152,6 +152,10 @@ button { cursor: pointer; }
 .feedback { min-height: 46px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-weight: 600; }
 .feedback .good { color: var(--jade); }
 .feedback .bad { color: var(--chili); }
+.feedback .pts.gem { background: var(--star); color: #2a1206; }
+.lifeup { font-family: var(--mono); font-weight: 700; color: var(--star); animation: pop .4s cubic-bezier(.2,1.4,.4,1); }
+.lifebar { display: block; width: 100%; height: 4px; border-radius: 2px; background: var(--tray-2); overflow: hidden; }
+.lifebar i { display: block; height: 100%; background: var(--star); transition: width .3s; }
 .feedback .pts { font-family: var(--mono); background: var(--jade); color: #0b2a17; padding: 2px 8px; border-radius: 99px; font-size: 13px; }
 
 .found { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -166,7 +170,7 @@ button { cursor: pointer; }
 .card h2 { font-size: clamp(26px, 6vw, 40px); color: var(--chili); line-height: 1; }
 .card h2.win { color: var(--butter); }
 .list { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.list li { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: baseline; padding: 8px 10px; border-radius: 10px; background: var(--tray-2); font-size: 15px; }
+.list li { display: grid; grid-template-columns: 46px 1fr auto; gap: 10px; align-items: baseline; padding: 8px 10px; border-radius: 10px; background: var(--tray-2); font-size: 15px; }
 .list li .p { font-family: var(--mono); color: var(--butter); font-weight: 700; }
 .list li .who { font-family: var(--mono); font-size: 12px; color: var(--jade); }
 .list li.miss { background: transparent; border: 1px dashed #6a3a26; }
@@ -302,7 +306,7 @@ button { cursor: pointer; }
   <section id="setup" style="display:flex;flex-direction:column;gap:18px">
     <div class="bunting" data-bunting aria-hidden="true"></div>
     <header class="hero">
-      <h1><span class="eyebrow"><span class="flag wave" data-flag></span>IGCSE China · Deng Xiaoping 1976–89</span>Croissant Bomb</h1>
+      <h1><span class="eyebrow"><span class="flag wave" data-flag></span><span id="courseLabel">IGCSE China · Deng Xiaoping 1976–89</span></span>Croissant Bomb</h1>
       <div class="hero-art">
         <div class="sun"></div>
         <div class="pole l" data-pole></div>
@@ -352,6 +356,14 @@ button { cursor: pointer; }
       <div><button class="btn ghost small" id="addPlayer" type="button">+ Add player</button></div>
     </div>
 
+    <div class="panel" id="coursePanel">
+      <h2>Course</h2>
+      <div class="seg" role="radiogroup" aria-label="Course">
+        <label><input type="radio" name="course" id="courseGcse" value="gcse" checked><span>IGCSE<small>Deng Xiaoping 1976–89</small></span></label>
+        <label><input type="radio" name="course" id="courseIb" value="ib"><span>IB HL<small>China 1861–1949</small></span></label>
+      </div>
+    </div>
+
     <div class="panel" id="topicsPanel">
       <h2>Topics</h2>
       <div class="topics" id="topicList"></div>
@@ -369,16 +381,19 @@ button { cursor: pointer; }
     <div class="panel">
       <h2>How it works</h2>
       <ol class="rules">
-        <li>A question appears, e.g. <b>"Why did Deng rise to power?"</b> The holder types one piece of evidence and presses Enter.</li>
+        <li>A question appears, e.g. <b id="ruleEg">"Why did Deng rise to power?"</b> The holder types one piece of evidence and presses Enter.</li>
         <li>If it's correct and new, you score points and the croissant passes on. If it's wrong or already said, you're still holding it.</li>
         <li>The more precise the evidence, the more it's worth. Names, dates and numbers score best.</li>
         <li>If the game doesn't recognise a fair answer, the other player can press <b>Count it</b> to award 1 point.</li>
+        <li>Every <b>15 points</b> earns an extra life, up to 5. Niche answers get you there faster.</li>
         <li>After each explosion you'll see every piece of evidence nobody said. That's your revision list.</li>
       </ol>
       <div class="points-key">
         <span class="pk"><b>1</b> general point</span>
         <span class="pk"><b>3</b> specific detail</span>
         <span class="pk"><b>5</b> exact name / date / statistic</span>
+        <span class="pk"><b>8</b> niche detail ★</span>
+        <span class="pk" id="pkIb" hidden><b>8</b> historian + their argument (e.g. "Hsu: Cixi to blame")</span>
       </div>
     </div>
 
@@ -474,7 +489,7 @@ button { cursor: pointer; }
    Each answer: t = shown text, p = points, m = patterns tested against the
    lower-cased answer. The highest-scoring unused match wins.            */
 const all = (...w) => new RegExp('^' + w.map(x => '(?=.*(?:' + x + '))').join(''));
-const TOPICS = [
+const GCSE_TOPICS = [
   { id: 'g4rise', short: 'Rise of the Gang of Four', q: 'How did the Gang of Four rise to power?', a: [
     { t: 'Mao personally backed them as his allies against the Party establishment', p: 3, m: [/personal (support|backing|endorse)|endors|empower|allies|mao.*(support|back|chose|protect|trust)/] },
     { t: 'In May 1966 Mao set up the Central Cultural Revolution Group (CCRG) to bypass the Politburo', p: 5, m: [/ccrg|cultural revolution group|may 1966/] },
@@ -714,7 +729,419 @@ const TOPICS = [
     { t: 'Deng: "Stability overrides everything"', p: 5, m: [/overrides? everything/] },
   ]},
 ];
-TOPICS.forEach(tp => tp.a.forEach((a, i) => a.id = tp.id + i));
+/* ---------- IB HL: China 1861–1949 (from the HL notes) ---------- */
+const HSU = x => all('\\bhsu\\b|immanuel', x);
+const IB_TOPICS = [
+  { id: 'ss', short: 'Self-Strengthening 1861–95', q: 'Why did the Self-Strengthening Movement fail?', a: [
+    { t: 'Cixi gave it no firm backing; it was left to a few provincial officials', p: 3, m: [/cixi|empress dowager|\bcourt\b/] },
+    { t: 'Navy funds were diverted to rebuild the Summer Palace (1888)', p: 5, m: [/summer palace|marble boat|navy fund/] },
+    { t: 'Feng Guifen: learn only "solid ships and effective guns" from the West', p: 5, m: [/feng ?gui ?fen|solid ships|effective guns/] },
+    { t: '"Chinese learning as the base, Western learning for use" (Zhang Zhidong)', p: 5, m: [/zhang ?zhi ?dong|chang chih|chinese learning|western learning|ti.?yong/] },
+    { t: 'Officials still saw Westerners as "barbarians" and felt superior', p: 3, m: [/barbarian|superior/] },
+    { t: 'Only weapons and industry were copied; Confucian institutions were untouched', p: 3, m: [/confuci|tradition|institution/] },
+    { t: 'Yung Wing\'s student mission to Hartford was abandoned in 1881', p: 5, m: [/yung wing|hartford|\b1881\b/] },
+    { t: 'Run by provincial leaders like Li Hongzhang and Zeng Guofan, so development was uneven', p: 3, m: [/li hong ?zhang|zeng|provinc|decentral|uneven/] },
+    { t: 'Prince Gong was sidelined and dismissed in 1884', p: 5, m: [/prince (gong|kung)|\b1884\b|zongli|tsungli/] },
+    { t: 'Officials\' disdain for merchants held back private enterprise', p: 3, m: [/merchant|private enterprise|entrepreneur/] },
+    { t: 'Defeat by Japan in 1894–95 exposed the failure', p: 3, m: [/japan|\b189[45]\b|sino.?japanese/] },
+    { t: 'Corruption', p: 1, m: [/corrupt|embezzl/] },
+  ]},
+  { id: 'sjw', short: 'Sino-Japanese War 1894–95', q: 'Why did China lose the First Sino-Japanese War (1894–95)?', a: [
+    { t: 'Navy money went on Cixi\'s Summer Palace instead', p: 5, m: [/summer palace|marble boat|navy fund/] },
+    { t: 'Li\'s nephew pocketed ammunition money, so the ships lacked shells', p: 5, m: [/nephew|ammunition|shells/] },
+    { t: 'The Beiyang fleet was a "comic-opera fleet"', p: 5, m: [/comic.?opera/] },
+    { t: 'Li Hongzhang\'s Beiyang fleet fought almost alone', p: 3, m: [/beiyang|li hong ?zhang/] },
+    { t: 'Only 1 of China\'s 4 fleets fought; the Nanyang, Fujian and Canton fleets stayed out', p: 5, m: [/nanyang|fujian|fuzhou|canton fleet|(4|four) fleets|one fleet/] },
+    { t: 'Japan fought as a united, modern nation state; China did not', p: 3, m: [/unit(y|ed)|nation.?state|nationalis|meiji/] },
+    { t: 'Provinces were stronger than the centre, so there was no national war effort', p: 3, m: [/provinc|decentral|central/] },
+    { t: 'Battle of the Yellow Sea (Yalu), September 1894', p: 5, m: [/yellow sea|yalu/] },
+    { t: 'Japan took Port Arthur (Nov 1894) and Weihaiwei (Feb 1895)', p: 5, m: [/port arthur|weihaiwei|wei hai wei|dalian|darien/] },
+    { t: 'Rivalry over Korea came to a head with the Tonghak rebellion (1894)', p: 3, m: [/tonghak|donghak|korea/] },
+    { t: 'Tianjin Convention (Li–Ito, 1885) let Japan send troops into Korea', p: 5, m: [/tianjin convention|tientsin convention|li.?ito|\b1885\b/] },
+    { t: 'Japan sank a Chinese troop ship (the Kowshing), July 1894', p: 5, m: [/kowshing|troop ?ship|sank|sunk/] },
+    { t: 'Pro-Japanese Kim Ok-kyun assassinated in Shanghai, March 1894', p: 5, m: [/kim ok|assassinat/] },
+    { t: 'Self-Strengthening had failed', p: 1, m: [/self.?strength/] },
+  ]},
+  { id: 'after95', short: 'After 1895: the scramble', q: 'What were the consequences of the Sino-Japanese War for China (1895–1900)?', a: [
+    { t: 'Treaty of Shimonoseki, April 1895', p: 3, m: [/shimonoseki/] },
+    { t: 'An indemnity of 200 million taels', p: 5, m: [/\b200(?!\d)/] },
+    { t: 'Korea declared independent: China lost its key tributary', p: 3, m: [/korea|tributar/] },
+    { t: 'Taiwan, the Pescadores and Liaodong ceded to Japan', p: 5, m: [/taiwan|formosa|pescadores|liaodong/] },
+    { t: 'Triple Intervention: Russia, France and Germany made Japan return Liaodong (China paid 30m taels more)', p: 5, m: [/triple intervention|\b30(?!\d)/] },
+    { t: 'Secret Sino-Russian Treaty (1896) and the Chinese Eastern Railway', p: 5, m: [/sino.?russian|chinese eastern|trans.?siberian|russian loan/] },
+    { t: 'The Scramble for Concessions ("cutting the Chinese melon")', p: 3, m: [/scramble|concession|melon/] },
+    { t: 'Germany took Qingdao on a 99-year lease after two missionaries were killed (1897)', p: 5, m: [/qingdao|tsingtao|jiaozhou|kiaochow|shandong/] },
+    { t: 'Russia leased Port Arthur and Liaodong (1898)', p: 5, m: [/port arthur|lushun/] },
+    { t: 'Britain leased the New Territories (99 years) and Weihaiwei', p: 5, m: [/new territories|weihaiwei/] },
+    { t: 'France leased Guangzhouwan and got railway and mining rights', p: 5, m: [/guangzhouwan|kwangchowan|france|french/] },
+    { t: 'US Open Door Notes (John Hay, 1899)', p: 5, m: [/open door|john hay|\bhay\b|1899/] },
+    { t: 'Japan won Western-style trading rights, plus the right to build factories', p: 3, m: [/manufactur|factor|commercial treaty|trading rights/] },
+    { t: 'It sparked demands for reform (the Hundred Days)', p: 3, m: [/reform|hundred days|\bkang\b/] },
+  ]},
+  { id: 'hundred', short: 'Hundred Days\' Reform 1898', q: 'Why did the Hundred Days\' Reform (1898) fail?', a: [
+    { t: 'Cixi\'s coup on 21 September 1898', p: 5, m: [/coup|21 september|september 1898/] },
+    { t: 'Cixi feared losing her own power', p: 3, m: [/cixi|empress dowager/] },
+    { t: 'Guangxu was put under palace arrest', p: 3, m: [/guangxu|arrest|detention|yingtai/] },
+    { t: 'Six reformers were executed ("Six Gentlemen")', p: 5, m: [/six (gentlemen|martyrs|reformers|advisers)|execut/] },
+    { t: 'Kang Youwei and Liang Qichao fled abroad', p: 3, m: [/\bkang\b|youwei|liang qi ?chao|fled/] },
+    { t: 'Too much too fast: 40–50 decrees in 103 days', p: 5, m: [/\b10[03]\b|too (fast|quick|sudden|much)|decrees/] },
+    { t: 'The reformers were young and inexperienced', p: 3, m: [/young|inexperien/] },
+    { t: 'Scrapping sinecures threatened officials and Manchu bannermen', p: 3, m: [/bannerm|sinecure|privilege|lost (their )?jobs/] },
+    { t: 'Abolishing the eight-legged essay angered the scholar-officials', p: 5, m: [/eight.?legged/] },
+    { t: 'Yuan Shikai betrayed the plot to Ronglu; conservatives claimed Guangxu would kill Cixi', p: 5, m: [/yuan shi ?kai|ronglu|jung.?lu|betray|kill (cixi|her)/] },
+    { t: 'The reformers had no army; real power lay with Cixi', p: 3, m: [/military|army|real power/] },
+  ]},
+  { id: 'boxcause', short: 'Boxer Rebellion: causes', q: 'What caused the Boxer Rebellion (1898–1901)?', a: [
+    { t: 'Anger at Christian missionaries and their converts', p: 3, m: [/missionar|christian|convert|church/] },
+    { t: 'The Scramble for Concessions humiliated China', p: 3, m: [/scramble|concession|melon/] },
+    { t: 'Germany seized Qingdao after two missionaries were killed in Shandong (1897)', p: 5, m: [/qingdao|shandong|jiaozhou/] },
+    { t: 'Yellow River flood (1898) and drought in the north (1900)', p: 5, m: [/flood|drought|yellow river|natural disaster/] },
+    { t: 'Railways and foreign goods put people out of work, e.g. on the Grand Canal', p: 3, m: [/railway|unemploy|\bjobs?\b|grand canal|foreign goods/] },
+    { t: 'Cixi and the Manchu conservatives at court backed the Boxers', p: 3, m: [/cixi|\bcourt\b|manchu|conservative/] },
+    { t: 'Yu Xian, the pro-Boxer governor of Shandong', p: 5, m: [/yu ?xian/] },
+    { t: 'Cixi was shown a staged "proof" that Boxers were immune to bullets', p: 5, m: [/immun|bullet|invulnerab|demonstration/] },
+    { t: 'Cixi was falsely told the powers wanted to take control of China', p: 5, m: [/false|forged|ultimatum|lied/] },
+    { t: 'Slogan: "Support the Qing, destroy the foreigners"', p: 5, m: [/support the qing|destroy the foreign|fu ?qing|mie ?yang/] },
+    { t: 'The failure of the 1898 reforms left conservatives in charge', p: 3, m: [/\b1898\b|hundred days/] },
+    { t: 'Poor, young peasants joined', p: 1, m: [/\bpoor\b|poverty|peasant/] },
+  ]},
+  { id: 'boxresult', short: 'Boxer Rebellion: results', q: 'What were the consequences of the Boxer Rebellion?', a: [
+    { t: 'The Boxer Protocol, September 1901', p: 3, m: [/protocol|\b1901\b/] },
+    { t: 'An indemnity of 450 million taels, paid over 39 years', p: 5, m: [/\b450(?!\d)/] },
+    { t: '25 forts destroyed; foreign troops allowed between Beijing and the sea', p: 5, m: [/\bforts?\b|troops (in|stationed)|legation guard/] },
+    { t: 'Ban on importing arms for 2 years', p: 5, m: [/\barms\b|weapons|import/] },
+    { t: 'Officials punished or executed; apologies to Germany and Japan', p: 3, m: [/apolog|punish|execut/] },
+    { t: 'Exams suspended for 5 years in 45 cities', p: 5, m: [/\bexams?\b|examination|\b45\b/] },
+    { t: 'The Zongli Yamen was replaced by a Ministry of Foreign Affairs', p: 5, m: [/zongli|tsungli|foreign affairs|waiwubu/] },
+    { t: 'An eight-nation relief force took Beijing (14 August 1900)', p: 5, m: [/eight.?nation|relief force|14 august|august 1900/] },
+    { t: 'Cixi and the emperor fled to Xi\'an in humiliation', p: 3, m: [/\bxi ?an\b|fled|humiliat/] },
+    { t: 'South-eastern provinces ignored the declaration of war (Mutual Protection)', p: 5, m: [/south.?east|mutual protection|provinces (refused|ignored)|liu kun ?yi/] },
+    { t: 'Support shifted to Sun Yat-sen\'s revolutionaries', p: 3, m: [/\bsun\b|revolution|tong ?meng ?hui/] },
+    { t: 'It forced the Qing into the New Policy reforms', p: 3, m: [/qing reforms?|new polic|xinzheng|reform/] },
+    { t: 'The dynasty lost huge prestige', p: 1, m: [/prestige|weak|discredit/] },
+  ]},
+  { id: 'xinhai', short: '1911 Revolution', q: 'Why did the 1911 Revolution break out?', a: [
+    { t: 'Railway Protection Movement: Sichuan railways nationalised (May 1911) and sold to foreign banks', p: 5, m: [/railway|sichuan|szechwan/] },
+    { t: 'An accidental bomb in Wuhan on 9 October 1911', p: 5, m: [/bomb|explosion|9 october/] },
+    { t: 'Wuchang Uprising, 10 October 1911 (Double Tenth)', p: 5, m: [/wuchang|double tenth|10 october|wuhan/] },
+    { t: 'The Tongmenghui, founded in 1905', p: 5, m: [/tong ?meng ?hui|t.?ung ?meng|revolutionary alliance|\b1905\b/] },
+    { t: 'Sun Yat-sen\'s Three Principles of the People', p: 3, m: [/three principles|3 principles|\b3pp\b/] },
+    { t: 'Sun raised money from overseas Chinese', p: 3, m: [/overseas|fund|money|bonds/] },
+    { t: 'New Army units in Hubei mutinied', p: 5, m: [/new army|hubei/] },
+    { t: '"Prince\'s Cabinet" of May 1911: 8 Manchus, 4 Han Chinese', p: 5, m: [/cabinet|royal|prince/] },
+    { t: 'The 1908 constitution outline set a 9-year wait', p: 5, m: [/\b9\b|nine.?year|outline|\b1908\b/] },
+    { t: 'Provincial assemblies (1909) gave critics a platform', p: 5, m: [/assembl|\b1909\b/] },
+    { t: 'Qing reforms raised expectations but strengthened the Manchus', p: 3, m: [/qing reform|manchu|\bhan\b/] },
+    { t: 'New classes (students, compradors, militarists) were hostile to the Qing', p: 3, m: [/comprador|student|militarist|new class/] },
+    { t: 'Floods and famine in the Yangtze valley in 1911', p: 3, m: [/flood|famine|yangtze/] },
+    { t: 'Debts and indemnities from foreign wars', p: 3, m: [/indemnit|debt/] },
+    { t: 'Cixi died in 1908, leaving a child emperor, Puyi', p: 3, m: [/puyi|child emperor|cixi/] },
+  ]},
+  { id: 'yuan', short: 'Yuan Shikai & warlordism', q: 'Why did the Republic fail and warlordism follow (1912–16)?', a: [
+    { t: 'Song Jiaoren was assassinated (March 1913)', p: 5, m: [/song ?jiao ?ren|assassinat/] },
+    { t: 'The GMD won 269 of 596 seats in the 1913 election', p: 5, m: [/\b269\b|\b596\b|election/] },
+    { t: 'The £25 million Reorganisation Loan, taken without parliament', p: 5, m: [/loan|\b25\b/] },
+    { t: 'The Second Revolution failed (July 1913) and Sun fled to Japan', p: 5, m: [/second revolution/, all('\\bsun\\b', 'fled|exile|japan')] },
+    { t: 'Yuan banned the GMD and shut down parliament', p: 3, m: [/dissolv|banned|parliament|\bgmd\b|\bkmt\b|guomindang/] },
+    { t: 'The Constitutional Compact (May 1914) gave Yuan near-unlimited power', p: 5, m: [/compact|\b1914\b|10 year|ten year/] },
+    { t: 'Yuan accepted most of Japan\'s 21 Demands (1915)', p: 5, m: [/\b21\b|twenty.?one/] },
+    { t: 'Yuan tried to become emperor (Dec 1915), triggering the National Protection War', p: 5, m: [/emperor|monarch|national protection|hongxian/] },
+    { t: 'Yuan died in June 1916, leaving a power vacuum', p: 3, m: [/power vacuum|\b1916\b/, all('yuan', 'die|death|dead')] },
+    { t: 'Beiyang generals were loyal to men, not the state (Duan Qirui, Feng Guozhang)', p: 5, m: [/duan|feng guo|beiyang/] },
+    { t: 'Provincial armies and military academies (1901–09) bred warlords', p: 3, m: [/academ|provinc|decentral/] },
+    { t: 'China had no democratic tradition', p: 3, m: [/tradition|confuci|autocra/] },
+    { t: 'Yuan Shikai ruled as a military strongman', p: 1, m: [/\byuan\b|military|dictator/] },
+  ]},
+  { id: 'warlords', short: 'Effects of warlordism', q: 'What were the effects of warlordism (1916–28)?', a: [
+    { t: 'Taxes on peasants rose up to five-fold', p: 5, m: [/five.?fold|5 ?times|five times/] },
+    { t: 'Heavy taxes on peasants', p: 3, m: [/\btax/] },
+    { t: 'Opium farming revived: from 3% to 20% of farmland', p: 5, m: [/opium|poppy|\b20\b/] },
+    { t: '735 customs barriers taxing goods in transit (1921)', p: 5, m: [/\b735\b|customs barrier|transit/] },
+    { t: 'Warlords printed their own money and abused the banks', p: 3, m: [/currenc|money|\bbanks?\b|notes/] },
+    { t: 'Famine in at least 9 provinces (1929)', p: 5, m: [/famine|9 provinces/] },
+    { t: 'Constant wars: Zhili–Anhui (1920), Zhili–Fengtian (1922, 1924)', p: 5, m: [/zhili|anhui|fengtian/] },
+    { t: 'Feng Yuxiang\'s Beijing coup (1924)', p: 5, m: [/feng yu ?xiang|christian general|beijing coup|\b1924\b/] },
+    { t: 'Brutal warlords like Zhang Zongchang, the "Dogmeat General"', p: 5, m: [/zhang zong ?chang|dogmeat/] },
+    { t: 'Zhang Zuolin ruled Manchuria with Japanese backing', p: 5, m: [/zhang zuo ?lin|manchuria|old marshal/] },
+    { t: 'Yan Xishan\'s "model province" in Shanxi', p: 5, m: [/yan xi ?shan|shanxi|model/] },
+    { t: 'Foreign loans, e.g. the Nishihara loans (145m yen)', p: 5, m: [/nishihara|\b145\b|foreign loan/] },
+    { t: 'It fuelled nationalism and new ideas (May 4th, the CCP)', p: 3, m: [/may (4|fourth)|nationalis|\bccp\b|communis/] },
+    { t: 'Violence and suffering for ordinary people', p: 1, m: [/violen|suffer|peasant|chaos/] },
+  ]},
+  { id: 'may4', short: 'May Fourth Movement 1919', q: 'What caused the May Fourth Movement (1919), and what did it lead to?', a: [
+    { t: 'The Treaty of Versailles gave Germany\'s Shandong rights to Japan', p: 5, m: [/versailles|shandong|qingdao/] },
+    { t: 'Anger at the 21 Demands (1915)', p: 3, m: [/\b21\b|twenty.?one/] },
+    { t: '3,000 students from 13 colleges marched from Tiananmen', p: 5, m: [/\b3,?000\b|13 colleges|tiananmen|heavenly peace/] },
+    { t: 'Students burned the house of pro-Japanese minister Cao Rulin', p: 5, m: [/cao ?ru ?lin/] },
+    { t: 'Strikes and boycotts by merchants and workers spread to Shanghai', p: 3, m: [/strike|boycott|merchant|worker/] },
+    { t: 'The New Culture Movement and Chen Duxiu\'s New Youth (1915)', p: 5, m: [/new youth|new culture|chen du ?xiu/] },
+    { t: 'Baihua: writing in the vernacular (Hu Shi)', p: 5, m: [/bai ?hua|vernacular|hu shih?\b/] },
+    { t: 'Lu Xun\'s "A Madman\'s Diary" attacked Confucian tradition', p: 5, m: [/lu xun|madman/] },
+    { t: 'Peking University (Beida) was a centre of new ideas', p: 3, m: [/peking univ|beijing univ|beida|cai yuan ?pei/] },
+    { t: 'A growing working class: over 1 million factory workers by 1919', p: 5, m: [/million|working class/] },
+    { t: 'It led to the founding of the CCP (July 1921)', p: 3, m: [/\bccp\b|communist party|\b1921\b/] },
+    { t: 'Interest in Marxism after 1917; the Karakhan Manifesto (1919)', p: 5, m: [/marx|bolshevik|\b1917\b|karakhan|lenin/] },
+    { t: 'China refused to sign the Treaty of Versailles', p: 3, m: [/refus|sign/] },
+    { t: 'Anger at the warlord government', p: 1, m: [/warlord|government/] },
+  ]},
+  { id: 'uf1', short: 'First United Front 1923–27', q: 'Why was the First United Front formed, and why did it collapse?', a: [
+    { t: 'Sun was desperate: appeals to the West and Japan had failed', p: 3, m: [/\bwest|desperat|japan/] },
+    { t: 'Soviet aid came only if the CCP joined (Sun–Joffe, 1923)', p: 5, m: [/joffe|comintern|soviet|ussr|russia/] },
+    { t: 'Borodin reorganised the GMD on Leninist lines (democratic centralism)', p: 5, m: [/borodin|democratic centralism/] },
+    { t: 'Whampoa Military Academy (1924): Jiang in charge, Zhou Enlai as political director', p: 5, m: [/whampoa|huangpu|zhou ?en ?lai/] },
+    { t: 'Lenin\'s line: communists should ally with nationalist parties', p: 3, m: [/lenin|bourgeois/] },
+    { t: 'CCP members joined the GMD as individuals', p: 3, m: [/individual|bloc|dual member/] },
+    { t: 'Sun died in March 1925, starting a power struggle', p: 5, m: [/power struggle|\b1925\b/, all('\\bsun\\b', 'die|death|dead')] },
+    { t: 'GMD left (Wang Jingwei) against the right (Hu Hanmin, Western Hills group)', p: 5, m: [/wang jing ?wei|hu han ?min|western hill|left|right/] },
+    { t: 'The May 30th Incident (1925) fuelled mass movements', p: 5, m: [/may 30|may thirtieth|30 may/] },
+    { t: 'The Zhongshan Incident (March 1926)', p: 5, m: [/zhongshan|warship|kidnap/] },
+    { t: 'The Northern Expedition (July 1926)', p: 3, m: [/northern expedition/] },
+    { t: 'The Shanghai Massacre / White Terror, April 1927', p: 5, m: [/shanghai massacre|white terror|april 1927|12 april|purge/] },
+    { t: 'The Green Gang (Du Yuesheng) helped Jiang attack the unions', p: 5, m: [/green gang|du yue ?sheng|tu yueh|triad/] },
+    { t: 'Rival governments: the left at Wuhan, Jiang at Nanjing', p: 5, m: [/wuhan|nanjing government/] },
+    { t: 'Jiang no longer needed the CCP: it was an alliance of convenience', p: 3, m: [/convenien|no longer need|anti.?communis/] },
+  ]},
+  { id: 'nanjing', short: 'Nanjing Decade 1927–37', q: 'How successful was Jiang Jieshi\'s Nanjing Decade (1927–37)?', a: [
+    { t: 'Railways grew from 8,000 km to 13,000 km', p: 5, m: [/\b8,?000\b|\b13,?000\b|railway/] },
+    { t: 'Currency reform: fapi paper money (1935)', p: 5, m: [/fa ?pi|currency|silver|\b1935\b/] },
+    { t: 'Some foreign concessions recovered (e.g. Hankou, Weihaiwei 1930)', p: 5, m: [/concession|hankou|hankow|weihaiwei/] },
+    { t: 'Light industry grew (cotton, flour, cement)', p: 3, m: [/industr|cotton|flour|cement/] },
+    { t: 'Secondary education grew four- to five-fold', p: 5, m: [/educat|school|universit/] },
+    { t: 'The New Life Movement (1934)', p: 5, m: [/new life/] },
+    { t: 'The Blue Shirts: an authoritarian, fascist-style regime', p: 5, m: [/blue shirt|fascis|authoritar/] },
+    { t: 'The land problem was ignored: rents were 40–60% of the crop', p: 5, m: [/\b40\b|\b60\b|rent|landlord|tenant/] },
+    { t: 'The 1930 law cutting rents to 37.5% was never enforced', p: 5, m: [/37\.5/] },
+    { t: 'Peasants (80% of the people) were neglected; "land to the tiller" betrayed', p: 3, m: [/peasant|land to the tiller|\b80\b/] },
+    { t: 'Military spending (over 40%) and debt kept the budget in deficit', p: 3, m: [/military|budget|deficit/] },
+    { t: 'Five encirclement campaigns against the CCP', p: 3, m: [/encircle|extermination|campaign/] },
+    { t: 'Non-resistance to Japan: Manchuria (1931), Tanggu Truce (1933)', p: 5, m: [/manchuria|mukden|\b1931\b|tanggu|\b1933\b|non.?resist/] },
+    { t: 'Rival warlords fought him in the Central Plains War (1930)', p: 5, m: [/central plains|\b1930\b|warlord/] },
+    { t: 'Corruption and cronyism (the Soong and Kong families)', p: 3, m: [/corrupt|four families|soong|kong|cron/] },
+    { t: 'December 9th student protests (1935) against appeasing Japan', p: 5, m: [/december 9|9 december|ninth/] },
+  ]},
+  { id: 'ccp27', short: 'CCP survival 1927–36', q: 'How did the CCP survive between 1927 and 1936?', a: [
+    { t: 'Mao and Zhu De built the Jiangxi Soviet (Ruijin)', p: 5, m: [/jiangxi|ruijin|soviet|zhu ?de/] },
+    { t: 'Guerrilla warfare', p: 3, m: [/guerr?ill?a/] },
+    { t: 'Land redistribution won peasant support', p: 3, m: [/\bland\b|peasant/] },
+    { t: '"Three rules and eight points" for good Red Army conduct', p: 5, m: [/three rules|eight points|8 points|conduct/] },
+    { t: 'The 5th encirclement used blockhouses and German advisers (von Seeckt)', p: 5, m: [/blockhouse|german|seeckt|fifth|5th|encircle/] },
+    { t: 'Otto Braun\'s conventional tactics failed', p: 5, m: [/otto braun|bo gu|conventional/] },
+    { t: 'The Long March, October 1934 – October 1935', p: 3, m: [/long march/] },
+    { t: 'About 86,000 set out; roughly 1 in 10 arrived', p: 5, m: [/\b86|\b90,?000|one in ten|1 in 10|\b8,?000|\b20,?000/] },
+    { t: 'The Zunyi Conference (January 1935) put Mao in charge', p: 5, m: [/zunyi/] },
+    { t: 'Crossing the Luding Bridge over the Dadu River', p: 5, m: [/luding|dadu|bridge/] },
+    { t: 'The Great Snowy Mountains and the marshlands', p: 5, m: [/snow|mountain|marsh|grassland/] },
+    { t: 'A new base at Yan\'an in Shaanxi', p: 3, m: [/yan.?an|shaanxi|yenan/] },
+    { t: 'The Long March became powerful propaganda', p: 3, m: [/propaganda|legend|myth/] },
+    { t: 'Xi\'an Incident, December 1936: Zhang Xueliang kidnapped Jiang', p: 5, m: [/xi.?an incident|zhang xue ?liang|young marshal|kidnap|december 1936/] },
+    { t: 'The Second United Front ended the encirclement campaigns', p: 3, m: [/united front/] },
+    { t: 'Stalin wanted Jiang freed to lead the fight against Japan', p: 5, m: [/stalin|soviet/] },
+  ]},
+  { id: 'war', short: 'War with Japan 1937–45', q: 'How did the war with Japan (1937–45) strengthen the CCP and weaken the GMD?', a: [
+    { t: 'The GMD lost Shanghai and the coast, and their tax revenue', p: 3, m: [/shanghai|coast|revenue|\btax/] },
+    { t: 'The Nanjing Massacre, December 1937 (about 300,000 killed)', p: 5, m: [/nanjing massacre|rape of nanjing|300,?000/] },
+    { t: 'The GMD retreated to Chongqing', p: 3, m: [/chongqing|chungking|sichuan/] },
+    { t: 'Yellow River dykes broken (June 1938): 2 million homeless', p: 5, m: [/yellow river|dykes?|dikes?|\b1938\b/] },
+    { t: 'Hyperinflation: notes issued rose from Ch$1.9bn (1937) to over Ch$1,000bn (1945)', p: 5, m: [/inflation|printing|\b1\.9\b|1,?031/] },
+    { t: 'Forced conscription; GMD soldiers starved and sick (10% had TB)', p: 5, m: [/conscript|tuberculosis|\btb\b|starv|beriberi/] },
+    { t: 'The Henan famine (1942–43): corruption and hoarding', p: 5, m: [/henan|honan|famine|hoard/] },
+    { t: 'The GMD lost about 3 million men fighting Japan head-on', p: 5, m: [/3 million|three million|brunt/] },
+    { t: 'Jiang kept his best troops back to blockade Yan\'an (1939)', p: 5, m: [/blockade|save|conserv|disease of the (heart|skin)/] },
+    { t: 'CCP membership grew from 40,000 (1937) to about 1 million (1945)', p: 5, m: [/40,?000|1 million|million members/] },
+    { t: 'The Hundred Regiments Offensive (1940)', p: 5, m: [/hundred regiments|100 regiments|peng de ?huai/] },
+    { t: 'Japan\'s "Three Alls" drove peasants to the CCP', p: 5, m: [/three alls|3 alls|kill all|burn all|mopping/] },
+    { t: 'Rent reduction and land for peasants in CCP areas', p: 3, m: [/\brent|\bland\b|peasant/] },
+    { t: 'The Eighth Route Army\'s rules of good conduct', p: 5, m: [/eighth route|8th route|rules/] },
+    { t: 'The "three-thirds" system in local government', p: 5, m: [/three.?thirds|3 thirds|one.?third/] },
+    { t: 'The Rectification Campaign (1942–44) made Mao supreme', p: 5, m: [/rectification|zheng ?feng|wang shi ?wei|kang sheng|self.?critic/] },
+    { t: 'Mao became CCP Chairman in 1943', p: 3, m: [/chairman|\b1943\b|cult/] },
+    { t: 'The US Dixie Mission to Yan\'an (July 1944)', p: 5, m: [/dixie/] },
+    { t: 'The New Fourth Army Incident (January 1941) ended real cooperation', p: 5, m: [/new (fourth|4th)|anhui incident|\b1941\b/] },
+    { t: 'Self-sufficiency in Yan\'an (about 40% of needs by 1945)', p: 5, m: [/self.?suffic|garrison|nanniwan/] },
+  ]},
+];
+/* ---------- Historians (IB): name + argument = 8 points ---------- */
+const HN = { hsu: '\\bhsu\\b|immanuel', gray: '\\bgr[ae]y\\b', spence: 'spence', fairbank: 'fairbank', sheridan: 'sheridan', fenby: 'fenby', kayloe: 'kayloe', damon: 'damon', gck: 'grasso|corrin|kort', reisch: 'reischauer', vlad: 'vladimirov' };
+const HIST_RE = /\b(hsu|immanuel|gray|grey|spence|fairbank|sheridan|fenby|kayloe|damon|grasso|corrin|kort|reischauer|vladimirov)\b/;
+const H = (who, idea, t) => ({ t, p: 8, h: true, m: [all(HN[who], idea)] });
+const IB_EXTRA = {
+  ss: [
+    H('hsu', 'cixi|responsib|blame|manipulat|uninformed', 'Hsu: Cixi "must be held responsible" for the failure to modernise; she was "uninformed on the nature of the modern world"'),
+    H('hsu', 'capital|money|fund|financ', 'Hsu: the movement failed for lack of capital, both government and private'),
+    H('gray', 'customs|revenue|capital|money', 'Gray disagrees with Hsu: Imperial Maritime Customs gave the government "large revenues"'),
+    H('fairbank', 'sitting duck|encroach|foreign|weak', 'Fairbank: its failure left China a "sitting duck" for foreign encroachment'),
+    H('hsu', 'scope|econom|limit', 'Hsu: economic limits narrowed the scope of modernisation'),
+    { t: 'There was too little money to fund it properly', p: 3, m: [/capital|money|fund/] },
+  ],
+  sjw: [
+    H('hsu', 'korea|tributar|balance', 'Hsu: with the southern tributaries lost, Korea "hung in a delicate balance", and Japan noticed'),
+    H('hsu', 'yuan', 'Hsu: Yuan Shikai was "the most powerful man in Korea" from 1885 to 1893'),
+  ],
+  after95: [
+    H('spence', 'patriot|anger|nationalis|scramble', 'Spence: anger at the Scramble for Concessions fed a new patriotism'),
+    H('fairbank', 'sitting duck|encroach|foreign|weak', 'Fairbank: China had become a "sitting duck" for foreign encroachment'),
+    H('hsu', 'railway|imperialis', 'Hsu: railway building was "the most blatant form of economic imperialism"'),
+  ],
+  hundred: [
+    H('hsu', 'kang|idealist|philosoph|statesm', 'Hsu: Kang was "an idealist and philosopher rather than a practical statesman"'),
+    H('hsu', 'cixi|responsib|blame', 'Hsu: Cixi "must be held responsible" for the failure to regenerate the dynasty'),
+    H('hsu', 'superficial|western|understand', 'Hsu: none of the leaders had more than a "superficial understanding" of the West'),
+    H('gray', 'public|opinion|unorgani|inarticulate', 'Gray: it failed because public opinion was "unorganised and inarticulate"'),
+    H('spence', 'official|jaundiced|oppos', 'Spence: senior officials viewed the reforms with a "jaundiced eye"'),
+    { t: 'Kang was an idealist who ignored where real power lay', p: 3, m: [/idealist|philosoph|naive/] },
+    { t: 'Public opinion was not organised behind the reforms', p: 3, m: [/public (opinion|support)/] },
+  ],
+  boxcause: [
+    H('hsu', 'christian|heterodox|disruptive|missionar', 'Hsu: Boxers saw Christianity as a "socially disruptive, delusive, heterodox sect"'),
+    H('gray', 'obscurantist|superstiti|manchu|court|parasitic', 'Gray: the court was run by "obscurantist, superstitious, parasitic and vengeful" Manchus'),
+  ],
+  xinhai: [
+    H('hsu', 'noisy|substance|reform', 'Hsu: the Qing reforms were "a noisy demonstration without substance"'),
+    H('gray', 'genuine|commit|reform', 'Gray disagrees: the Qing showed a genuine commitment to reform'),
+    H('fairbank', 'trigger|bomb|floodgate', 'Fairbank: the Double Tenth was the trigger that opened the floodgates'),
+    H('hsu', 'tong ?meng ?hui|milestone|multi', 'Hsu: the Tongmenghui was "a milestone" because it was multi-provincial and multi-class'),
+    H('damon', 'fund|money|sun|personality', 'Damon: Sun\'s fame and fundraising kept the poorly funded revolution alive'),
+    H('gray', 'school|educat|generation', 'Gray: new private schools created a generation "sceptical of old values" and hostile to the court'),
+    H('gray', 'comprador', 'Gray: the compradors were "the chief instruments" of China\'s new economic strength'),
+    H('hsu', 'comprador|new rich', 'Hsu: the compradors were the "New Rich", a new social force'),
+  ],
+  yuan: [
+    H('hsu', 'travesty|yuan|disorder|lawless', 'Hsu: Yuan "made a travesty out of the republic" and caused the disorder that followed'),
+    H('hsu', 'nationalism|usurp', 'Hsu: "nationalism usurped democracy"'),
+    H('hsu', 'cabinet|shambles|five months', 'Hsu: within five months Yuan reduced the cabinet "to shambles"'),
+    H('kayloe', 'power base|military|lack', 'Kayloe: the revolutionaries lacked a military power base'),
+    H('fenby', 'framework|democra', 'Fenby: the revolutionaries never designed a framework for democracy'),
+  ],
+  warlords: [
+    H('sheridan', 'econom|damag|inhibit|retard', 'Sheridan: warlordism had "a damaging and inhibiting effect" on the economy'),
+    H('sheridan', 'opium|revenue', 'Sheridan: warlords encouraged "a vast revival of opium growing" for revenue'),
+    H('gray', 'opium|suppress', 'Gray disagrees on opium: smoking was suppressed and addicts rehabilitated'),
+    H('gray', 'militari|tradition|society|countryside', 'Gray: militarising the countryside did "irreversible damage" to traditional society'),
+    H('fenby', 'village|bandit|defenceless|troops', 'Fenby: villagers, three-quarters of the population, were defenceless against troops and bandits'),
+    H('spence', 'bank|foreign|invest|labour|market', 'Spence: foreigners saw China as a boundless market and a source of cheap labour'),
+    H('sheridan', 'intellectual|nationalis|integration', 'Sheridan: the chaos sparked an "intellectual revolution" and new nationalism'),
+  ],
+  may4: [
+    H('hsu', 'catalyst|intellectual|nationalis', 'Hsu: May 4th was the catalyst for an intellectual revolution; mass nationalism became a new force'),
+    H('gray', 'united front|intellectual|merchant|worker', 'Gray: a "united front" of intellectuals, merchants and workers defeated the government'),
+    H('gray', 'cultur', 'Gray: its greatest impact was cultural'),
+    H('fairbank', 'family|women|cultur|heritage', 'Fairbank: the New Culture Movement attacked the old family system and the subjection of women'),
+  ],
+  uf1: [
+    H('gray', 'desperat|sun|soviet|aid', 'Gray: by 1922 Sun was desperate; the Soviets insisted that cooperation with the CCP be part of the deal'),
+    H('spence', 'may 30|thirtieth|morale|worker', 'Spence: worker morale stayed high after the May Thirtieth Incident'),
+    H('spence', 'green gang|gang|union', 'Spence: for a price, the Green Gang would break up unions and kill workers'),
+  ],
+  nanjing: [
+    H('hsu', 'land|landlord|peasant|remiss', 'Hsu: the government was "seriously remiss" in ignoring landlordism and peasant misery'),
+    H('hsu', 'educat|post|telecom|communicat|progress', 'Hsu: real progress was made in education, post and telecommunications'),
+    H('hsu', 'budget|inflation|deficit|notes|1949', 'Hsu: chronic budget deficits led to inflation and the collapse of 1949'),
+    H('fenby', 'finger|father|unruly|hypocris|new life', 'Fenby: the reforms were like "a frustrated father wagging his finger at his unruly children"'),
+    H('sheridan', 'rural|educat|neglect', 'Sheridan: rural education was the most neglected'),
+    H('spence', 'peasant|subsistence|crisis', 'Spence: by the early 1930s many peasants were pushed below subsistence'),
+    H('gray', 'debt|inherit', 'Gray: Nanjing inherited vast debts'),
+  ],
+  ccp27: [
+    H('gray', 'ten|90,?000|survive|reach', 'Gray: of 90,000 who broke out of Jiangxi, only one in ten reached the north'),
+    H('sheridan', '5,?000|survive|full', 'Sheridan: only about 5,000 or fewer survived the full march'),
+    H('hsu', 'blessing|xi ?an|unite', 'Hsu: the Xi\'an Incident was "a blessing in disguise" that united the country'),
+    H('gck', 'rules|welfare|conduct', 'Grasso, Corrin and Kort: the Red Army\'s rules showed commitment to public welfare'),
+  ],
+  war: [
+    H('fairbank', 'printing|press', 'Fairbank: "instead of learning how to live off the land like the CCP did, the GMD lived off the printing press"'),
+    H('fairbank', 'conservative|chongqing', 'Fairbank: Jiang\'s regime was "as unimaginatively conservative in Chongqing as in Nanjing"'),
+    H('reisch', 'frontal|resistance|burden|exhaust', 'Fairbank and Reischauer: "the oppressive burden of frontal resistance" exhausted Chongqing'),
+    H('hsu', 'yan ?an|planted|preparation|mao', 'Hsu: "Yan\'an planted the seed of Mao\'s ultimate success"'),
+    H('hsu', 'sow|seed|destruction|conscript|peasant', 'Hsu: the GMD\'s treatment of peasants "sowed the seeds of GMD destruction"'),
+    H('gray', 'hump|airlift', 'Gray: the Hump airlift kept China in the war but met only a fraction of its needs'),
+    H('gray', 'hatred|reprisal|japanese|red army|three alls', 'Gray: hatred of Japanese reprisals drove more Chinese to join the Red Army'),
+    H('gray', 'self.?suffic|40', 'Gray: self-sufficiency was never achieved, but by 1945 about 40% of needs were met'),
+    H('spence', 'ragged|barefoot|beriberi|malnutrition', 'Spence: GMD soldiers were "ragged, barefooted men" weakened by beriberi'),
+    H('spence', 'member|800|grew', 'Spence: CCP membership grew from 40,000 (1937) to 800,000 (1940)'),
+    H('sheridan', 'callous|peasant', 'Sheridan: the GMD elite treated peasants with "incredible callousness"'),
+    H('vlad', 'rectification|cruel|coercion|purification', 'Vladimirov: Mao\'s "moral purification" was cruel psychological coercion'),
+  ],
+};
+IB_TOPICS.forEach(tp => { if (IB_EXTRA[tp.id]) tp.a.push(...IB_EXTRA[tp.id]); });
+IB_TOPICS.push({ id: 'hist', short: 'Historians\' views', q: 'Historiography: name a historian and their argument about China 1861–1949.',
+  a: IB_TOPICS.flatMap(tp => tp.a.filter(a => a.h)).map(a => ({ ...a })) });
+
+/* ---------- Niche tier: obscure details score 8 ---------- */
+const NICHE = [
+  // IGCSE
+  'Ye Jianying', 'July 1977', 'Tiananmen Incident', 'iron rice bowl" made', 'Township and Village', 'Grain output rose from', 'fixed quota',
+  'Zhuhai', '14 coastal', 'class struggle', 'Song Jian', 'echo boom', 'Later, longer, fewer', '1.5 billion', 'Four Great Freedoms',
+  'spiritual pollution', 'political Leninist', 'Xidan', 'feudal', 'sent-down', 'Fang Lizhi', '18.5%', 'Goddess', 'guandao',
+  'January Storm', 'Criticise Lin', 'Lin Biao', 'Shanghai militia', 'last testament', '750,000', 'sole criterion', 'Ten-Year Plan',
+  'Xiaogang', 'Marriage Law raised', 'black children', '26 April', 'Yang Shangkun', 'Autonomous Federation', 'Wuer Kaixi',
+  // IB
+  'Yung Wing', 'Prince Gong', 'Zhang Zhidong', 'Kowshing', 'Kim Ok-kyun', 'comic-opera', 'Only 1 of China', 'Guangzhouwan', 'Sino-Russian Treaty',
+  'Triple Intervention', 'eight-legged', 'Ronglu', 'Six reformers', 'Yu Xian', 'immune to bullets', 'falsely told', 'Zongli Yamen', 'Mutual Protection',
+  '45 cities', 'Prince\'s Cabinet', '9-year wait', 'New Army units', '269 of 596', 'Constitutional Compact', 'Duan Qirui', '735 customs', 'Nishihara',
+  'Dogmeat', '3% to 20%', 'Cao Rulin', 'Baihua', 'Karakhan', 'Green Gang (Du', 'Zhongshan Incident', 'Western Hills', '37.5%', 'December 9th',
+  'Blue Shirts', 'Otto Braun', 'Zunyi', 'blockhouses', 'Dixie', 'three-thirds', 'Henan famine', 'Ch$1.9bn',
+];
+const nicheMissing = NICHE.filter(k => {
+  const hits = [...GCSE_TOPICS, ...IB_TOPICS].flatMap(tp => tp.a).filter(a => a.t.includes(k));
+  hits.forEach(a => { a.p = 8; a.n = true; });
+  return !hits.length;
+});
+if (nicheMissing.length) console.warn('Niche keys not found:', nicheMissing);
+
+[...GCSE_TOPICS, ...IB_TOPICS].forEach(tp => tp.a.forEach((a, i) => a.id = tp.id + i));
+
+/* ---------- Question variants: short, one-answer-per-turn prompts that fit each evidence bank ---------- */
+const QV = {
+  rise: ['Why was Deng able to take power after Mao died?', 'Give a reason Deng beat Hua Guofeng to power (1976–78).', 'What helped Deng rise to power by 1978?'],
+  need: ['Why did China\'s economy need reform by 1978?', 'Give evidence China was in economic trouble in 1978.', 'What was wrong with the Maoist economy by 1978?'],
+  agri: ['Name a change Deng made to farming.', 'How did Deng reform agriculture?', 'Give evidence about Deng\'s farming reforms or their results.'],
+  g4rise: ['How did the Gang of Four rise to power?', 'Give a reason the Gang of Four became so powerful.', 'How did Mao help the Gang of Four?'],
+  g4fall: ['Why did the Gang of Four fall in 1976?', 'Give a reason the Gang of Four were arrested.', 'Why couldn\'t the Gang of Four hold on after Mao died?'],
+  open: ['Name one of Deng\'s industry or Open Door reforms.', 'How did Deng open China to the world?', 'Give evidence about SEZs, industry, education or the Four Modernisations.'],
+  ocpfx: ['How was the One Child Policy enforced?', 'Give an effect of the One Child Policy.', 'How did the One Child Policy change Chinese families?'],
+  tian: ['Why did Deng order the Tiananmen crackdown in 1989?', 'Give a reason the CCP used force in June 1989.', 'Why did the leadership choose martial law in 1989?'],
+  ocp: ['Why was the One Child Policy introduced?', 'Give a reason China limited families to one child.', 'Why did the CCP fear population growth?'],
+  polit: ['Why did Deng refuse political reform?', 'Give evidence Deng kept the CCP\'s grip on power.', 'How did Deng block calls for democracy?'],
+  demo: ['What caused the Democracy Movement of 1978–79?', 'Why did the Democracy Wall appear?', 'Give a reason people demanded democracy in 1978–79.'],
+  unrest: ['What caused the student protests of 1986–89?', 'Why did students protest in Tiananmen Square in 1989?', 'Give a cause of student unrest under Deng.'],
+  ss: ['Why did the Self-Strengthening Movement fail?', 'Give a weakness of Self-Strengthening (1861–95).', 'Who or what held back Self-Strengthening?'],
+  sjw: ['Why did China lose the Sino-Japanese War (1894–95)?', 'Give a reason Japan beat China in 1894–95.', 'Give evidence about the 1894–95 war and China\'s defeat.'],
+  after95: ['What did the 1894–95 defeat cost China?', 'Give a result of the Sino-Japanese War for China.', 'How did foreign powers take advantage of China after 1895?'],
+  hundred: ['Why did the Hundred Days\' Reform fail?', 'Give a reason the 1898 reforms collapsed.', 'Who or what stopped the 1898 reforms?'],
+  boxcause: ['What caused the Boxer Rebellion?', 'Why did the Boxers attack foreigners and Christians?', 'Give a reason the Boxer movement grew (1898–1900).'],
+  boxresult: ['What were the results of the Boxer Rebellion?', 'Name a term of the Boxer Protocol or another result of 1900.', 'How did the Boxer Rebellion weaken the Qing?'],
+  xinhai: ['Why did the 1911 Revolution break out?', 'Give a cause of the fall of the Qing in 1911.', 'What sparked or fuelled the Double Tenth?'],
+  yuan: ['Why did the Republic fail under Yuan Shikai?', 'How did Yuan Shikai destroy democracy?', 'Give a cause of the warlord era.'],
+  warlords: ['What were the effects of warlordism?', 'How did warlordism damage China (1916–28)?', 'Give evidence of life under the warlords.'],
+  may4: ['What caused the May Fourth Movement?', 'Give a cause or result of May Fourth 1919.', 'Give evidence about the May Fourth Movement.'],
+  uf1: ['Why did the First United Front form or collapse?', 'Give evidence about the First United Front (1923–27).', 'Explain the rise or fall of the GMD–CCP alliance.'],
+  nanjing: ['How successful was the Nanjing Decade?', 'Name a success or failure of Jiang\'s rule (1927–37).', 'Was the Nanjing Decade a success? Give evidence.'],
+  ccp27: ['How did the CCP survive 1927–36?', 'Give evidence about the Jiangxi Soviet, Long March or Xi\'an Incident.', 'Why wasn\'t the CCP destroyed by Jiang?'],
+  war: ['How did the war with Japan help the CCP or hurt the GMD?', 'Give evidence that 1937–45 helped the CCP or hurt the GMD.', 'Yan\'an or Chongqing: give evidence from 1937–45.'],
+  hist: ['Name a historian and their argument (China 1861–1949).', 'Historiography: who argued what?', 'Give a historian\'s view on any China topic.'],
+};
+const lastQ = {};
+function pickQuestion(tp) {
+  const qs = QV[tp.id] || [tp.q];
+  const options = qs.length > 1 ? qs.filter(q => q !== lastQ[tp.id]) : qs;
+  return lastQ[tp.id] = options[Math.floor(Math.random() * options.length)];
+}
+
+/* ---------- Extra lives ---------- */
+const LIFE_EVERY = 15, MAX_LIVES = 5;
+function addPoints(pl, n) {
+  pl.score += n; pl.bank = (pl.bank || 0) + n;
+  let gained = 0;
+  while (pl.bank >= LIFE_EVERY) { pl.bank -= LIFE_EVERY; if (pl.lives < MAX_LIVES) { pl.lives++; gained++; } }
+  return gained;
+}
+
+const COURSES = {
+  gcse: { topics: GCSE_TOPICS, label: 'IGCSE China · Deng Xiaoping 1976–89', eg: '"Why did Deng rise to power?"' },
+  ib: { topics: IB_TOPICS, label: 'IB HL History · China 1861–1949', eg: '"Why did the Hundred Days\' Reform fail?"' },
+};
+let course = 'gcse';
+let TOPICS = GCSE_TOPICS;
 
 const FUSE = { easy: [18, 40, 10], normal: [12, 30, 7], hard: [8, 20, 5] }; // min s, max s, min after a pass
 
@@ -738,6 +1165,7 @@ const snd = {
   tick() { this.tone(1400, .04, 'square', .03); },
   good() { this.tone(660, .12, 'triangle', .12); this.tone(990, .18, 'triangle', .12, .09); },
   bad() { this.tone(140, .22, 'sawtooth', .07); },
+  life() { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, .16, 'triangle', .1, .12 + i * .08)); },
   boom() {
     if (!this.on || !this.ctx) return;
     const c = this.ctx, t = c.currentTime, len = c.sampleRate * 1.2;
@@ -782,7 +1210,7 @@ document.querySelectorAll('[data-bunting]').forEach(el => {
 
 /* ===================== SETUP UI ===================== */
 let names = store.get('names', ['Student 1', 'Student 2']);
-let chosen = store.get('topics', TOPICS.map(t => t.id));
+let chosen = [];
 function drawPlayers() {
   $('#playerList').innerHTML = names.map((n, i) => `
     <div class="prow">
@@ -794,9 +1222,24 @@ function drawPlayers() {
 $('#playerList').addEventListener('input', e => { if (e.target.dataset.i != null) names[+e.target.dataset.i] = e.target.value; });
 $('#playerList').addEventListener('click', e => { const i = e.target.dataset.rm; if (i != null && names.length > 2) { names.splice(+i, 1); drawPlayers(); } });
 $('#addPlayer').onclick = () => { names.push('Player ' + (names.length + 1)); drawPlayers(); $('#pname' + (names.length - 1)).select(); };
-$('#topicList').innerHTML = TOPICS.map(t => `
-  <label class="chk"><input type="checkbox" id="tp_${t.id}" value="${t.id}" ${chosen.includes(t.id) ? 'checked' : ''}>
-  <span>${esc(t.short)}<small>${t.a.length} pieces of evidence</small></span></label>`).join('');
+function setCourse(c) {
+  course = COURSES[c] ? c : 'gcse';
+  const cfg = COURSES[course];
+  TOPICS = cfg.topics;
+  const saved = store.get('topics_' + course, null) || (course === 'gcse' ? store.get('topics', null) : null);
+  chosen = (saved || TOPICS.map(t => t.id)).filter(id => TOPICS.some(t => t.id === id));
+  if (!chosen.length) chosen = TOPICS.map(t => t.id);
+  $('#topicList').innerHTML = TOPICS.map(t => `
+    <label class="chk"><input type="checkbox" id="tp_${t.id}" value="${t.id}" ${chosen.includes(t.id) ? 'checked' : ''}>
+    <span>${esc(t.short)}<small>${t.a.length} pieces of evidence</small></span></label>`).join('');
+  $('#courseLabel').textContent = cfg.label;
+  $('#ruleEg').textContent = cfg.eg;
+  $('#pkIb').hidden = course !== 'ib';
+  document.querySelectorAll('input[name=course]').forEach(r => r.checked = r.value === course);
+  store.set('course', course);
+}
+document.querySelectorAll('input[name=course]').forEach(r => r.addEventListener('change', () => setCourse(r.value)));
+setCourse(store.get('course', 'gcse'));
 const savedFuse = store.get('fuse', 'normal');
 document.querySelectorAll('input[name=fuse]').forEach(r => r.checked = r.value === savedFuse);
 drawPlayers();
@@ -915,7 +1358,7 @@ function renderSetup() {
   $('#roomEntry').hidden = NET.on;
   $('#roomInfo').hidden = !NET.on;
   $('#roomWait').hidden = !(NET.on && !NET.host);
-  $('#topicsPanel').hidden = $('#fusePanel').hidden = $('#startRow').hidden = !canRun;
+  $('#coursePanel').hidden = $('#topicsPanel').hidden = $('#fusePanel').hidden = $('#startRow').hidden = !canRun;
   renderRoom();
 }
 function renderRoom() {
@@ -980,10 +1423,10 @@ function startGame() {
   }
   if (!chosen.length) { $('#setupMsg').textContent = 'Pick at least one topic.'; return; }
   const fuse = document.querySelector('input[name=fuse]:checked').value;
-  store.set('topics', chosen); store.set('fuse', fuse);
+  store.set('topics_' + course, chosen); store.set('fuse', fuse);
   $('#setupMsg').textContent = '';
   S = {
-    gid: uid(), players: players.map(p => ({ ...p, lives: 3, score: 0 })),
+    gid: uid(), players: players.map(p => ({ ...p, lives: 3, score: 0, bank: 0 })),
     current: 0, fuse: FUSE[fuse], queue: [], topic: null, used: new Map(), custom: [], pending: null,
     round: 0, phase: 'play', fuseEnd: 0, lastLoser: -1, totalSaid: 0, evn: 0, ev: null,
   };
@@ -997,7 +1440,7 @@ function nextTopic() {
 }
 
 function startRound() {
-  S.round++; S.topic = nextTopic(); S.used = new Map(); S.custom = []; S.pending = null;
+  S.round++; S.topic = nextTopic(); S.q = pickQuestion(S.topic); S.used = new Map(); S.custom = []; S.pending = null;
   S.fuseEnd = performance.now() + rand(S.fuse[0], S.fuse[1]) * 1000;
   S.phase = 'play';
   emit({ type: 'round' });
@@ -1021,9 +1464,9 @@ function emit(ev) {
 
 function publish() {
   NET.fb.set(roomRef('state'), {
-    gid: S.gid, round: S.round, phase: S.phase, current: S.current, topic: S.topic.id,
+    gid: S.gid, round: S.round, phase: S.phase, current: S.current, topic: S.topic.id, q: S.q,
     lastLoser: S.lastLoser, totalSaid: S.totalSaid,
-    players: S.players.map(p => ({ name: p.name, cid: p.cid, lives: p.lives, score: p.score })),
+    players: S.players.map(p => ({ name: p.name, cid: p.cid, lives: p.lives, score: p.score, bank: p.bank || 0 })),
     used: [...S.used].map(([id, who]) => ({ id, who })),
     custom: S.custom, pending: S.pending, ev: S.ev,
   }).catch(e => console.error(e));
@@ -1031,10 +1474,10 @@ function publish() {
 
 function receive(s) {
   if (!s) { if (S) { S = null; cancelAnimationFrame(raf); showSetup(); } return; }
-  const topic = TOPICS.find(t => t.id === s.topic);
+  const topic = [...GCSE_TOPICS, ...IB_TOPICS].find(t => t.id === s.topic);
   if (!topic) return;
   S = {
-    gid: s.gid, round: s.round, phase: s.phase, current: s.current, topic,
+    gid: s.gid, round: s.round, phase: s.phase, current: s.current, topic, q: s.q || topic.q,
     lastLoser: s.lastLoser ?? -1, totalSaid: s.totalSaid || 0,
     players: Object.values(s.players || {}),
     used: new Map(Object.values(s.used || {}).map(u => [u.id, u.who])),
@@ -1058,7 +1501,7 @@ function roundView() {
   $('#bun').style.visibility = 'visible';
   $('#reveal').hidden = $('#over').hidden = true;
   $('#roundLabel').textContent = `Round ${S.round} · ${S.topic.short}`;
-  $('#promptText').textContent = S.topic.q;
+  $('#promptText').textContent = S.q;
   $('#feedback').innerHTML = '';
   $('#answerInput').value = '';
   cancelAnimationFrame(raf); raf = requestAnimationFrame(anim);
@@ -1071,7 +1514,8 @@ function renderAll() {
     const a = seatAngle(i);
     return `<div class="pchip seat ${i === S.current && playing ? 'on' : ''} ${p.lives <= 0 || !here(p) ? 'out' : ''} ${NET.on && p.cid === ME ? 'me' : ''}" style="left:${(50 + 37 * Math.cos(a)).toFixed(2)}%;top:${(50 + 40 * Math.sin(a)).toFixed(2)}%">
       <span class="nm">${esc(p.name)}</span>
-      <span class="meta"><span class="lives">${[0, 1, 2].map(k => MINI.replace('<svg', `<svg class="${k < p.lives ? '' : 'gone'}"`)).join('')}</span>${p.score} pts</span>
+      <span class="meta"><span class="lives">${Array.from({ length: Math.max(3, p.lives) }, (_, k) => MINI.replace('<svg', `<svg class="${k < p.lives ? '' : 'gone'}"`)).join('')}</span>${p.score} pts</span>
+      <span class="lifebar" title="Points towards the next life"><i style="width:${p.lives >= MAX_LIVES ? 100 : Math.round((p.bank || 0) / LIFE_EVERY * 100)}%"></i></span>
     </div>`;
   }).join('');
   $('#holder').innerHTML = `<span class="comrade">★ Comrade ★</span>${NET.on && myTurn ? '<em>You</em> are' : `<em>${esc(h.name)}</em> is`} holding the croissant`;
@@ -1134,9 +1578,11 @@ function findHits(tp, raw) {
   const hits = tp.a.filter(a => a.m.some(r => r.test(n) || r.test(c)));
   if (hits.some(a => !S.used.has(a.id))) return hits;
   const mine = [...new Set(c.trim().split(' ').filter(w => !STOP.has(w) && (w.length >= 3 || /\d/.test(w))).map(stem))];
-  const scored = tp.a.map(a => {
+  const named = HIST_RE.test(c);
+  const scored = tp.a.filter(a => !a.h || named).map(a => {
     const shared = mine.filter(s => a.sig.has(s));
     const distinct = shared.some(s => tp.df.get(s) === 1 && (s.length >= 5 || /\d\d/.test(s)) && !/^19\d\d$/.test(s));
+    if (a.h) return { a, k: shared.length, ok: shared.some(s => !HIST_RE.test(s)) }; // a historian needs their argument too
     return { a, k: shared.length, ok: shared.length >= 2 || distinct };
   }).filter(x => x.ok).sort((x, y) => y.k - x.k || y.a.p - x.a.p).map(x => x.a);
   return hits.concat(scored.filter(a => !hits.includes(a)));
@@ -1147,13 +1593,14 @@ function judge(raw) {
   raw = raw.trim();
   if (raw.length < 2) return;
   const hits = findHits(S.topic, raw);
-  const fresh = hits.filter(a => !S.used.has(a.id)).sort((x, y) => y.p - x.p);
+  const named = HIST_RE.test(norm(raw));
+  const fresh = hits.filter(a => !S.used.has(a.id)).sort((x, y) => y.p - x.p || (named ? (y.h ? 1 : 0) - (x.h ? 1 : 0) : 0));
   const me = S.players[S.current];
   if (fresh.length) {
     const a = fresh[0];
-    S.used.set(a.id, me.name); me.score += a.p; S.totalSaid++; S.pending = null;
+    S.used.set(a.id, me.name); const life = addPoints(me, a.p); S.totalSaid++; S.pending = null;
     passOn();
-    emit({ type: 'good', pts: a.p, text: a.t, who: me.name, cid: me.cid });
+    emit({ type: 'good', pts: a.p, text: a.t, who: me.name, cid: me.cid, tier: a.h ? 'h' : a.n ? 'n' : '', life });
   } else if (hits.length) {
     emit({ type: 'dup', text: hits[0].t, by: S.used.get(hits[0].id), who: me.name, cid: me.cid });
   } else {
@@ -1172,9 +1619,9 @@ function handleAction(a, from) {
     if (!S.pending || S.pending.pid !== a.pid) return;
     if (NET.on && (holder.cid === from || !S.players.some(p => p.cid === from))) return;
     const text = S.pending.text;
-    S.custom.push({ text, who: holder.name }); holder.score += 1; S.totalSaid++; S.pending = null;
+    S.custom.push({ text, who: holder.name }); const life = addPoints(holder, 1); S.totalSaid++; S.pending = null;
     passOn();
-    emit({ type: 'count', text, who: holder.name });
+    emit({ type: 'count', text, who: holder.name, life });
   }
 }
 
@@ -1195,13 +1642,16 @@ function rosterChanged() {
 
 function feedbackView(ev) {
   const mine = !NET.on || ev.cid === ME, by = NET.on && !mine ? `${esc(ev.who)}: ` : '';
+  const lifeUp = ev.life ? `<span class="lifeup">+1 life${NET.on && !mine ? ` for ${esc(ev.who)}` : ''}!</span>` : '';
+  if (ev.life) snd.life();
   if (ev.type === 'good') {
     snd.good();
-    feedback(`<span class="pts">+${ev.pts}</span><span class="good">${by}${esc(ev.text)}</span>`);
+    const tag = ev.tier === 'h' ? 'HISTORIAN ' : ev.tier === 'n' ? 'NICHE ' : '';
+    feedback(`<span class="pts${ev.pts >= 8 ? ' gem' : ''}">${tag}+${ev.pts}</span><span class="good">${by}${esc(ev.text)}</span>${lifeUp}`);
     if (mine) $('#answerInput').value = '';
   } else if (ev.type === 'count') {
     snd.good();
-    feedback(`<span class="pts">+1</span><span class="good">Counted: ${esc(ev.text)}</span>`);
+    feedback(`<span class="pts">+1</span><span class="good">Counted: ${esc(ev.text)}</span>${lifeUp}`);
   } else if (ev.type === 'dup') {
     if (mine) { snd.bad(); nudge(); }
     feedback(`<span class="bad">${by}Already said by ${esc(ev.by)}: "${esc(ev.text)}".${mine ? ' Try something else!' : ''}</span>`);
@@ -1284,7 +1734,7 @@ function showReveal() {
   const items = S.topic.a.slice().sort((x, y) => (S.used.has(x.id) ? 0 : 1) - (S.used.has(y.id) ? 0 : 1) || y.p - x.p);
   $('#revealList').innerHTML = items.map(a => {
     const who = S.used.get(a.id);
-    return `<li class="${who ? '' : 'miss'}"><span class="p">+${a.p}</span><span>${esc(a.t)}</span><span class="who">${who ? esc(who) : 'missed'}</span></li>`;
+    return `<li class="${who ? '' : 'miss'}"><span class="p">${a.h ? 'H ' : a.n ? '★ ' : ''}+${a.p}</span><span>${esc(a.t)}</span><span class="who">${who ? esc(who) : 'missed'}</span></li>`;
   }).join('') + S.custom.map(c => `<li><span class="p">+1</span><span>${esc(c.text)}</span><span class="who">${esc(c.who)}</span></li>`).join('');
   const ref = isReferee();
   $('#nextBtn').textContent = alive().length <= 1 ? 'See the winner' : 'Next round';
