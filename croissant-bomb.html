@@ -128,6 +128,15 @@ button { cursor: pointer; }
 .bun-slot { position: absolute; left: 50%; top: 47%; width: 30%; transform: translate(-50%, -50%); z-index: 1; }
 .seat { position: absolute; transform: translate(-50%, -50%); z-index: 2; width: max-content; max-width: 28%; align-items: center; text-align: center; box-shadow: 0 6px 14px -6px rgba(0,0,0,.7); }
 .seat.on { transform: translate(-50%, -50%) scale(1.07); }
+.bubble { position: absolute; left: 50%; bottom: calc(100% + 9px); transform: translateX(-50%); width: max-content; max-width: 200px;
+  padding: 5px 11px; border-radius: 12px; background: var(--crumb); color: #2a1206; font-family: var(--body); font-size: 13px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: 0 4px 10px -4px rgba(0,0,0,.6); pointer-events: none; z-index: 3; }
+.bubble::after { content: ""; position: absolute; left: 50%; top: 100%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--crumb); }
+.bubble.below { bottom: auto; top: calc(100% + 9px); }
+.bubble.below::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--crumb); }
+.seat.on .bubble { background: var(--butter); }
+.seat.on .bubble::after { border-top-color: var(--butter); }
+.seat.on .bubble.below::after { border-top-color: transparent; border-bottom-color: var(--butter); }
 .seat .nm { max-width: 100%; }
 
 /* ---------- turn timer ---------- */
@@ -1367,7 +1376,7 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const ME = (() => { // per tab, so two tabs on one computer are two players
   try { let id = sessionStorage.getItem('dcb_cid'); if (!id) { id = uid(); sessionStorage.setItem('dcb_cid', id); } return id; } catch { return uid(); }
 })();
-const NET = { on: false, host: false, hostCid: '', code: '', db: null, fb: null, roster: [], off: [] };
+const NET = { on: false, host: false, hostCid: '', code: '', db: null, fb: null, roster: [], off: [], typing: {} };
 let mode = store.get('mode', 'online');
 const isReferee = () => !NET.on || NET.host;
 const roomRef = p => NET.fb.ref(NET.db, `rooms/${NET.code}${p ? '/' + p : ''}`);
@@ -1430,7 +1439,7 @@ async function enterRoom(code, host, name) {
   Object.assign(NET, { on: true, host, code, hostCid: host ? ME : '' });
   const meRef = roomRef('players/' + ME), joined = Date.now();
   // The host leaving closes the room; a guest leaving just drops them from it.
-  const register = () => Promise.all([set(meRef, { name, t: joined }), onDisconnect(host ? roomRef() : meRef).remove()]);
+  const register = () => Promise.all([set(meRef, { name, t: joined }), onDisconnect(host ? roomRef() : meRef).remove(), onDisconnect(roomRef('typing/' + ME)).remove()]);
   await register();
   if (!host) NET.off.push(onValue(ref(NET.db, '.info/connected'), s => { if (s.val() === true && NET.on) register().catch(() => {}); }));
   NET.off.push(onValue(roomRef('meta'), s => {
@@ -1438,6 +1447,7 @@ async function enterRoom(code, host, name) {
     NET.hostCid = s.val().host;
     renderRoom();
   }));
+  NET.off.push(onValue(roomRef('typing'), s => { NET.typing = s.val() || {}; drawBubbles(); }));
   NET.off.push(onValue(roomRef('players'), s => {
     NET.roster = Object.entries(s.val() || {})
       .map(([cid, p]) => ({ cid, name: String((p && p.name) || 'Comrade').slice(0, 18), t: (p && p.t) || 0 }))
@@ -1458,12 +1468,41 @@ function closeRoom() {
   const target = NET.host ? roomRef() : roomRef('players/' + ME);
   NET.fb.onDisconnect(target).cancel().catch(() => {});
   NET.fb.remove(target).catch(() => {});
-  Object.assign(NET, { on: false, host: false, hostCid: '', code: '', roster: [] });
+  NET.fb.remove(roomRef('typing/' + ME)).catch(() => {});
+  Object.assign(NET, { on: false, host: false, hostCid: '', code: '', roster: [], typing: {} });
+  lastTyped = '';
   S = null; cancelAnimationFrame(raf);
   try { history.replaceState(null, '', location.pathname); } catch {}
   showSetup();
 }
 function roomGone(msg) { closeRoom(); netMsg(msg); }
+
+// Live typing: the holder's draft is shared so everyone sees it in a bubble at their seat.
+// Other players' drafts never leave their device, so nobody can copy an answer before its turn.
+let typingTimer = 0, lastTyped = '';
+function sendTyping() {
+  if (!NET.on || typingTimer) return;
+  typingTimer = setTimeout(() => {
+    typingTimer = 0;
+    if (!NET.on) return;
+    const holding = S && S.phase === 'play' && S.players[S.current] && S.players[S.current].cid === ME;
+    const v = holding ? $('#answerInput').value.trim().slice(0, 80) : '';
+    if (v === lastTyped) return;
+    lastTyped = v;
+    const r = roomRef('typing/' + ME);
+    (v ? NET.fb.set(r, v) : NET.fb.remove(r)).catch(() => {});
+  }, 120);
+}
+$('#answerInput').addEventListener('input', sendTyping);
+
+function drawBubbles() {
+  document.querySelectorAll('.seat').forEach(seat => {
+    const b = seat.querySelector('.bubble'), cid = seat.dataset.cid;
+    const holder = S && S.players[S.current];
+    const t = NET.on && cid !== ME && holder && S.phase === 'play' && holder.cid === cid ?String(NET.typing[cid] || '') : '';
+    b.textContent = t; b.hidden = !t;
+  });
+}
 
 function renderSetup() {
   const on = mode === 'online', canRun = !on || NET.host;
@@ -1618,7 +1657,7 @@ function roundView() {
   $('#roundLabel').textContent = `Round ${S.round} · ${S.topic.short}`;
   $('#promptText').textContent = S.q;
   $('#feedback').innerHTML = '';
-  $('#answerInput').value = '';
+  $('#answerInput').value = ''; sendTyping();
   cancelAnimationFrame(raf); raf = requestAnimationFrame(anim);
 }
 
@@ -1627,7 +1666,8 @@ function renderAll() {
   const h = S.players[S.current], myTurn = !NET.on || h.cid === ME, playing = S.phase === 'play';
   $('#seats').innerHTML = S.players.map((p, i) => {
     const a = seatAngle(i);
-    return `<div class="pchip seat ${i === S.current && playing ? 'on' : ''} ${p.lives <= 0 || !here(p) ? 'out' : ''} ${NET.on && p.cid === ME ? 'me' : ''}" style="left:${(50 + 37 * Math.cos(a)).toFixed(2)}%;top:${(50 + 40 * Math.sin(a)).toFixed(2)}%">
+    return `<div class="pchip seat ${i === S.current && playing ? 'on' : ''} ${p.lives <= 0 || !here(p) ? 'out' : ''} ${NET.on && p.cid === ME ? 'me' : ''}" data-cid="${esc(p.cid)}" style="left:${(50 + 37 * Math.cos(a)).toFixed(2)}%;top:${(50 + 40 * Math.sin(a)).toFixed(2)}%">
+      <span class="bubble ${Math.sin(a) < -0.2 ? 'below' : ''}" hidden></span>
       <span class="nm">${esc(p.name)}</span>
       <span class="meta"><span class="lives">${Array.from({ length: Math.max(3, p.lives) }, (_, k) => MINI.replace('<svg', `<svg class="${k < p.lives ? '' : 'gone'}"`)).join('')}</span>${p.score} pts</span>
       <span class="lifebar" title="Points towards the next life"><i style="width:${p.lives >= MAX_LIVES ? 100 : Math.round((p.bank || 0) / LIFE_EVERY * 100)}%"></i></span>
@@ -1643,9 +1683,10 @@ function renderAll() {
   inp.disabled = !(playing && inGame);
   $('#answerForm button').disabled = !(playing && myTurn);
   inp.placeholder = myTurn ? 'Type your evidence…' : inGame ? `${h.name} has it. Get your answer ready…` : mine ? 'You\'re out this game' : 'You\'re watching this game';
-  if (V.holder !== S.current) { V.holder = S.current; V.turnStart = performance.now(); if (playing && myTurn) inp.focus(); }
+  if (V.holder !== S.current) { V.holder = S.current; V.turnStart = performance.now(); if (playing && myTurn) inp.focus(); sendTyping(); }
   $('#muteBtn').textContent = 'Sound: ' + (snd.on ? 'on' : 'off');
   $('#quitBtn').textContent = !NET.on ? 'Quit' : NET.host ? 'End game' : 'Leave';
+  drawBubbles();
 }
 
 function feedback(html) { $('#feedback').innerHTML = html; }
@@ -1802,7 +1843,7 @@ function feedbackView(ev) {
     snd.good();
     const tag = ev.tier === 'h' ? 'HISTORIAN ' : ev.tier === 'n' ? 'NICHE ' : '';
     feedback(`<span class="pts${ev.pts >= 8 ? ' gem' : ''}">${tag}+${ev.pts}</span><span class="good">${by}${esc(ev.text)}</span>${lifeUp}`);
-    if (mine) $('#answerInput').value = '';
+    if (mine) { $('#answerInput').value = ''; sendTyping(); }
   } else if (ev.type === 'count') {
     snd.good();
     feedback(`<span class="pts">+1</span><span class="good">Counted: ${esc(ev.text)}</span>${lifeUp}`);
@@ -1875,6 +1916,7 @@ function boomView() {
   }
   $('#answerInput').blur();
   $('#countIt')?.remove();
+  sendTyping();
   const g = S.gid, r = S.round;
   setTimeout(() => { if (S && S.gid === g && S.round === r && S.phase === 'boom') showReveal(); }, reduced ? 300 : 1300);
 }
