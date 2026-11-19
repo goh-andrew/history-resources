@@ -174,6 +174,8 @@ button { cursor: pointer; }
 .feedback { min-height: 46px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-weight: 600; }
 .feedback .good { color: var(--jade); }
 .feedback .bad { color: var(--chili); }
+.feedback .dym { color: var(--butter); }
+.feedback .dym b { color: var(--crumb); font-weight: 700; }
 .feedback .pts.gem { background: var(--star); color: #2a1206; }
 .lifeup { font-family: var(--mono); font-weight: 700; color: var(--star); animation: pop .4s cubic-bezier(.2,1.4,.4,1); }
 .lifebar { display: block; width: 100%; height: 4px; border-radius: 2px; background: var(--tray-2); overflow: hidden; }
@@ -2248,7 +2250,10 @@ const syn = s => SYN.reduce((t, [re, to]) => t.replace(re, to), s);
 function findHits(tp, raw) {
   prep(tp);
   const n = norm(raw), c = ' ' + correct(tp, raw) + ' ', ns = syn(n), cs = syn(c);
+  // exact = matched as typed (or via a synonym); anything else was a guess and gets a "Did you mean?"
+  const exact = new Set(tp.a.filter(a => a.m.some(r => r.test(n) || r.test(ns))).map(a => a.id));
   const hits = tp.a.filter(a => a.m.some(r => r.test(n) || r.test(c) || r.test(ns) || r.test(cs)));
+  hits.exact = exact;
   if (hits.some(a => !S.used.has(a.id))) return hits;
   const mine = [...new Set((c + cs).trim().split(/ +/).filter(w => !STOP.has(w) && (w.length >= 3 || /\d/.test(w))).map(stem))];
   const named = HIST_RE.test(c);
@@ -2258,23 +2263,34 @@ function findHits(tp, raw) {
     if (a.h) return { a, k: shared.length, ok: shared.some(s => !HIST_RE.test(s)) }; // a historian needs their argument too
     return { a, k: shared.length, ok: shared.length >= 2 || distinct };
   }).filter(x => x.ok).sort((x, y) => y.k - x.k || y.a.p - x.a.p).map(x => x.a);
-  return hits.concat(scored.filter(a => !hits.includes(a)));
+  const all = hits.concat(scored.filter(a => !hits.includes(a)));
+  all.exact = exact;
+  return all;
 }
 
 /* ===================== REFEREE: answers and actions ===================== */
+function award(a, raw) {
+  const me = S.players[S.current];
+  S.used.set(a.id, me.name); const life = addPoints(me, a.p); S.totalSaid++; S.pending = null;
+  S.said[S.current] = raw.slice(0, 60);
+  passOn();
+  emit({ type: 'good', pts: a.p, text: a.t, who: me.name, cid: me.cid, tier: a.h ? 'h' : a.n ? 'n' : '', life });
+}
+
 function judge(raw) {
   raw = raw.trim();
   if (raw.length < 2) return;
+  S.suggest = null;
   const hits = findHits(S.topic, raw);
   const named = HIST_RE.test(norm(raw));
   const fresh = hits.filter(a => !S.used.has(a.id)).sort((x, y) => y.p - x.p || (named ? (y.h ? 1 : 0) - (x.h ? 1 : 0) : 0));
+  const sure = fresh.filter(a => hits.exact.has(a.id));
   const me = S.players[S.current];
-  if (fresh.length) {
-    const a = fresh[0];
-    S.used.set(a.id, me.name); const life = addPoints(me, a.p); S.totalSaid++; S.pending = null;
-    S.said[S.current] = raw.slice(0, 60);
-    passOn();
-    emit({ type: 'good', pts: a.p, text: a.t, who: me.name, cid: me.cid, tier: a.h ? 'h' : a.n ? 'n' : '', life });
+  if (sure.length) {
+    award(sure[0], raw);
+  } else if (fresh.length) {
+    S.suggest = { sid: uid(), aid: fresh[0].id, raw };
+    emit({ type: 'suggest', sid: S.suggest.sid, text: fresh[0].t, raw, who: me.name, cid: me.cid });
   } else if (hits.length) {
     emit({ type: 'dup', text: hits[0].t, by: S.used.get(hits[0].id), who: me.name, cid: me.cid });
   } else {
@@ -2297,6 +2313,16 @@ function handleAction(a, from) {
     S.said[S.current] = text.slice(0, 60);
     passOn();
     emit({ type: 'count', text, who: holder.name, life });
+  } else if (a.type === 'confirm') {
+    if (!S.suggest || S.suggest.sid !== a.sid) return;
+    if (NET.on && holder.cid !== from) return;
+    const sug = S.suggest, ans = S.topic.a.find(x => x.id === sug.aid);
+    S.suggest = null;
+    if (a.yes && ans && !S.used.has(ans.id)) award(ans, sug.raw);
+    else {
+      S.pending = { pid: uid(), text: sug.raw };
+      emit({ type: 'miss', text: sug.raw, who: holder.name, cid: holder.cid, pid: S.pending.pid });
+    }
   }
 }
 
@@ -2310,7 +2336,7 @@ function rosterChanged() {
   const h = S.players[S.current];
   if (S.phase === 'play' && !here(h)) {
     const nx = nextAlive(S.current);
-    if (nx !== S.current) { S.current = nx; S.pending = null; emit({ type: 'skip', who: h.name }); return; }
+    if (nx !== S.current) { S.current = nx; S.pending = S.suggest = null; emit({ type: 'skip', who: h.name }); return; }
   }
   renderAll();
 }
@@ -2319,7 +2345,18 @@ function feedbackView(ev) {
   const mine = !NET.on || ev.cid === ME, by = NET.on && !mine ? `${esc(ev.who)}: ` : '';
   const lifeUp = ev.life ? `<span class="lifeup">+1 life${NET.on && !mine ? ` for ${esc(ev.who)}` : ''}!</span>` : '';
   if (ev.life) snd.life();
-  if (ev.type === 'good') {
+  if (ev.type !== 'suggest') V.suggest = null;
+  if (ev.type === 'suggest') {
+    if (mine) {
+      V.suggest = { sid: ev.sid, raw: ev.raw };
+      feedback(`<span class="dym">Did you mean: <b>"${esc(ev.text)}"</b>?</span>
+        <button class="btn small" type="button" id="dymYes">Yes (Enter)</button><button class="btn ghost small" type="button" id="dymNo">No</button>`);
+      $('#dymYes').onclick = () => confirmDym(true);
+      $('#dymNo').onclick = () => confirmDym(false);
+    } else {
+      feedback(`<span class="dym">${esc(ev.who)} wrote "${esc(ev.raw)}". Did they mean <b>"${esc(ev.text)}"</b>?</span>`);
+    }
+  } else if (ev.type === 'good') {
     snd.good();
     const tag = ev.tier === 'h' ? 'HISTORIAN ' : ev.tier === 'n' ? 'NICHE ' : '';
     feedback(`<span class="pts${ev.pts >= 8 ? ' gem' : ''}">${tag}+${ev.pts}</span><span class="good">${by}${esc(ev.text)}</span>${lifeUp}`);
@@ -2343,10 +2380,18 @@ function feedbackView(ev) {
   }
 }
 
+function confirmDym(yes) {
+  if (!V.suggest) return;
+  const sid = V.suggest.sid;
+  V.suggest = null;
+  act({ type: 'confirm', sid, yes });
+}
+
 $('#answerForm').addEventListener('submit', e => {
   e.preventDefault();
   if (!S || S.phase !== 'play') return;
   const t = $('#answerInput').value.trim();
+  if (V.suggest && t === V.suggest.raw) { confirmDym(true); return; } // Enter again = "yes, that's what I meant"
   if (t.length < 2) { nudge(); return; }
   if (NET.on && S.players[S.current].cid !== ME) { nudge(); return; }
   act({ type: 'submit', text: t });
@@ -2381,7 +2426,7 @@ setInterval(() => { if (S && S.phase === 'play' && isReferee() && performance.no
 function explode() {
   S.phase = 'boom';
   S.players[S.current].lives--;
-  S.lastLoser = S.current; S.pending = null;
+  S.lastLoser = S.current; S.pending = S.suggest = null;
   emit({ type: 'boom' });
 }
 
@@ -2395,7 +2440,7 @@ function boomView() {
     const app = $('#app'); app.classList.remove('quake'); void app.offsetWidth; app.classList.add('quake');
   }
   $('#answerInput').blur();
-  $('#countIt')?.remove();
+  $('#countIt')?.remove(); $('#dymYes')?.remove(); $('#dymNo')?.remove(); V.suggest = null;
   sendTyping();
   const g = S.gid, r = S.round;
   setTimeout(() => { if (S && S.gid === g && S.round === r && S.phase === 'boom') showReveal(); }, reduced ? 300 : 1300);
