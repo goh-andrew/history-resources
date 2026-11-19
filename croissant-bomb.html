@@ -62,8 +62,18 @@ button { cursor: pointer; }
 .prow input { flex: 1; min-width: 0; background: var(--tray-2); border: 2px solid transparent; border-radius: 10px; padding: 10px 12px; }
 .prow input:focus { border-color: var(--butter); outline: none; }
 .prow button { width: 44px; border: 0; border-radius: 10px; background: var(--tray-2); color: var(--crumb-dim); font-size: 20px; }
-.topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 8px; }
-.chk { display: flex; gap: 10px; align-items: flex-start; background: var(--tray-2); padding: 10px 12px; border-radius: 10px; cursor: pointer; }
+#topicList { display: flex; flex-direction: column; gap: 18px; }
+.tg-top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.tg-top h2 { margin-right: auto; }
+.tgroup { display: flex; flex-direction: column; gap: 8px; }
+.tg-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid rgba(240, 181, 60, .22); padding-bottom: 6px; }
+.tg-head h3 { font-size: 16px; color: var(--butter); margin-right: auto; }
+.tg-count { font-family: var(--mono); font-size: 12px; color: var(--crumb-dim); }
+.tg-btn { border: 0; border-radius: 8px; padding: 4px 10px; background: var(--tray-2); color: var(--crumb); font-family: var(--mono); font-size: 12px; font-weight: 700; }
+.tg-btn:hover { background: #5a2a1a; }
+.topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); gap: 6px; }
+.chk { display: flex; gap: 9px; align-items: flex-start; background: var(--tray-2); padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 15px; line-height: 1.25; }
+.chk:has(input:checked) { box-shadow: inset 0 0 0 1px rgba(240, 181, 60, .45); }
 .chk input { accent-color: var(--butter); width: 18px; height: 18px; margin-top: 2px; flex: none; }
 .chk small { display: block; color: var(--crumb-dim); font-family: var(--mono); font-size: 11px; }
 .seg { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -339,6 +349,7 @@ button { cursor: pointer; }
       <div class="seg" role="radiogroup" aria-label="Play mode">
         <label><input type="radio" name="mode" value="online" checked><span>Online room<small>everyone on their own device</small></span></label>
         <label><input type="radio" name="mode" value="local"><span>One device<small>pass it round</small></span></label>
+        <label><input type="radio" name="mode" value="solo"><span>Solo<small>beat your best score</small></span></label>
       </div>
     </div>
 
@@ -372,12 +383,13 @@ button { cursor: pointer; }
       <h2>Course</h2>
       <div class="seg" role="radiogroup" aria-label="Course">
         <label><input type="radio" name="course" id="courseGcse" value="gcse" checked><span>IGCSE<small>Deng Xiaoping 1976–89</small></span></label>
-        <label><input type="radio" name="course" id="courseIb" value="ib"><span>IB HL<small>China 1861–1949</small></span></label>
+        <label><input type="radio" name="course" id="courseIb" value="ib"><span>IB HL<small>China, Japan &amp; Korea 1839–1949</small></span></label>
       </div>
     </div>
 
     <div class="panel" id="topicsPanel">
-      <h2>Topics</h2>
+      <div class="tg-top"><h2>Topics</h2><span class="label" id="topicsTotal"></span>
+        <button class="tg-btn" type="button" data-pick="1">Select all</button><button class="tg-btn" type="button" data-pick="0">Clear</button></div>
       <div class="topics" id="topicList"></div>
     </div>
 
@@ -397,6 +409,7 @@ button { cursor: pointer; }
         <li>If it's correct and new, you score points and the croissant passes on. If it's wrong or already said, you're still holding it.</li>
         <li>The more precise the evidence, the more it's worth. Names, dates and numbers score best.</li>
         <li>If the game doesn't recognise a fair answer, the other player can press <b>Count it</b> to award 1 point.</li>
+        <li>Playing <b>Solo</b>? You hold it every turn. Score as much as you can before your lives run out (no Count it in Solo).</li>
         <li>Every <b>15 points</b> earns an extra life, up to 5. Niche answers get you there faster.</li>
         <li>After each explosion you'll see every piece of evidence nobody said. That's your revision list.</li>
       </ol>
@@ -770,9 +783,44 @@ const GCSE_TOPICS = [
     { t: 'He wanted stability to protect the economic reforms', p: 3, m: [/protect (the )?(reforms|economy)|stability|economic growth/] },
   ]},
 ];
-/* ---------- IB HL: China 1861–1949 (from the HL notes) ---------- */
+/* ---------- IB HL: China, Japan & Korea 1839–1949 (from the HL notes) ---------- */
 const HSU = x => all('\\bhsu\\b|immanuel', x);
 const IB_TOPICS = [
+  { id: 'opium', short: 'Opium Wars 1839–60', q: 'Why did China lose the Opium Wars, and what did the treaties cost it?', a: [
+    { t: 'The Canton System: only one port open to foreign trade, through the Cohong', p: 3, m: [/canton|one port|cohong|co hong|hong merchants/] },
+    { t: 'Tribute mentality: China felt superior and saw no need for foreign trade', p: 3, m: [/tribut|no need for|superior|middle kingdom/] },
+    { t: 'The trade balance favoured China (tea and silk), angering Britain', p: 3, m: [/\btea\b|\bsilk\b|balance of trade|trade (im)?balance|trade deficit/] },
+    { t: 'The Macartney Mission (1793) failed to open China', p: 5, m: [/macartney|1793/] },
+    { t: 'British opium sales soared and addiction spread', p: 3, m: [/opium|addict/] },
+    { t: 'Clashes over law: the Lady Hughes case (1784), "a life for a life"', p: 5, m: [/lady hughes|life for a life|1784/] },
+    { t: 'China\'s army was backward: knives, failed fire rafts and bad intelligence', p: 3, m: [/backward|knives|fire rafts?|monkey|spies|outdated|old weapons/] },
+    { t: 'Britain had modern warships and guns', p: 3, m: [/warships?|gunboats?|\bnavy\b|modern (weapons|guns)|steam/] },
+    { t: 'Treaty of Nanjing (1842)', p: 3, m: [/nanjing|nanking|1842/] },
+    { t: 'Five treaty ports were opened', p: 5, m: [/(5|five) (treaty )?ports|treaty ports?/] },
+    { t: 'Hong Kong was ceded to Britain', p: 5, m: [/hong ?kong/] },
+    { t: 'Extraterritoriality: Britons were tried under British law', p: 5, m: [/extraterritorial|own (law|courts)|jurisdiction/] },
+    { t: 'Britain got most-favoured-nation status', p: 5, m: [/most.?favou?red/] },
+    { t: 'China lost control of its tariffs (fixed low tariffs)', p: 5, m: [/tariff/] },
+    { t: 'The Second Opium War (1856–60) forced more concessions', p: 3, m: [/second opium|2nd opium|1856|1860/] },
+    { t: 'It began the unequal treaties and China\'s humiliation', p: 3, m: [/unequal treat|humiliat/] },
+    { t: 'China was weak and was defeated', p: 1, m: [/\bweak|defeat/] },
+  ]},
+  { id: 'taiping', short: 'Taiping & Nian rebellions', q: 'Why did the Taiping and Nian rebellions break out, and what did they change?', a: [
+    { t: 'Displaced, jobless peasants drifted into cities and banditry', p: 3, m: [/jobless|unemploy|displaced|bandit|idlers/] },
+    { t: 'Opium imports disrupted the economy', p: 3, m: [/opium/] },
+    { t: 'Natural disasters, e.g. the Henan drought (1847)', p: 5, m: [/drought|honan|henan|1847|natural (disasters?|calamit)|flood|famine/] },
+    { t: 'Officials embezzled famine relief', p: 3, m: [/embezzl|corrupt|relief/] },
+    { t: 'Suffering masses were easily drawn into rebellion', p: 1, m: [/suffer|poverty|\bpoor\b|peasant/] },
+    { t: 'The Taiping Rebellion lasted from 1850 to 1864', p: 5, m: [/\b18(50|51|52|64)\b/] },
+    { t: 'Hong Xiuquan\'s Christian-inspired "Heavenly Kingdom"', p: 5, m: [/hong xiu ?quan|heavenly kingdom|christian/] },
+    { t: 'Zeng Guofan raised his own Hunan Army', p: 5, m: [/zeng|tseng|hunan army|xiang army/] },
+    { t: 'Li Hongzhang raised the Anhui Army', p: 5, m: [/li hong ?zhang|anhui|anhwei|huai army/] },
+    { t: 'Western forces helped crush the rebels (the Ever-Victorious Army)', p: 5, m: [/western (help|forces|aid|troops)|ever.?victorious|gordon/] },
+    { t: 'Han Chinese officials rose in power at the Manchus\' expense', p: 3, m: [/han chinese|chinese officials|manchu/] },
+    { t: 'Provincial leaders grew stronger, weakening the Qing', p: 3, m: [/provinc|regional|decentral/] },
+    { t: 'They showed a mass uprising could shake the dynasty', p: 3, m: [/uprising|rebellions? (was|were|could)|possible/] },
+    { t: 'They led to the Self-Strengthening Movement', p: 3, m: [/self.?strength/] },
+  ]},
   { id: 'ss', short: 'Self-Strengthening 1861–95', q: 'Why did the Self-Strengthening Movement fail?', a: [
     { t: 'Cixi gave it no firm backing; it was left to a few provincial officials', p: 3, m: [/cixi|empress dowager|\bcourt\b/] },
     { t: 'Navy funds were diverted to rebuild the Summer Palace (1888)', p: 5, m: [/summer palace|marble boat|navy fund/] },
@@ -792,6 +840,25 @@ const IB_TOPICS = [
     { t: 'Ordinary people distrusted Western novelties', p: 3, m: [/ordinary people|the public|distrust|ignoran|superstiti/] },
     { t: 'Its new navy, the Beiyang Fleet, was destroyed by Japan', p: 3, m: [/beiyang|fleet|navy (was )?(destroy|sunk|annihilat)/] },
     { t: 'The Qing government was weak', p: 1, m: [/\bweak|incompeten/] },
+  ]},
+  { id: 'ssfeat', short: 'Self-Strengthening: achievements', q: 'What did the Self-Strengthening Movement achieve?', a: [
+    { t: 'The Zongli Yamen (1861), China\'s first foreign office', p: 5, m: [/zongli|tsungli|foreign office|1861/] },
+    { t: 'Diplomatic missions to Britain and France (1876)', p: 5, m: [/1876|diplomatic missions?|embass/] },
+    { t: 'The Tongwen Guan interpreters\' college (1862)', p: 5, m: [/tong ?wen|t ung ?wen|interpret|1862/] },
+    { t: 'Foreign language schools in Beijing and Canton (1864)', p: 3, m: [/language schools?|foreign languages?/] },
+    { t: '30 students sent to Hartford, USA (1872)', p: 5, m: [/hartford|yung wing|1872|students? (sent|abroad)/] },
+    { t: 'The Jiangnan Arsenal at Shanghai (1865)', p: 5, m: [/jiangnan|kiangnan|1865/] },
+    { t: 'The Fuzhou Dockyard and naval school (1866)', p: 5, m: [/fuzhou|foochow|dockyard|1866/] },
+    { t: 'The Nanjing Arsenal (1867)', p: 5, m: [/nanjing arsenal|nanking arsenal|1867/] },
+    { t: 'A small gun factory at Suzhou (1864)', p: 5, m: [/soochow|suzhou|gun factory/] },
+    { t: 'The Tianjin Naval Academy (1880)', p: 5, m: [/naval academy|tientsin|tianjin|1880/] },
+    { t: 'A modern navy, the Beiyang Fleet', p: 3, m: [/beiyang|\bnavy\b|fleet|warships?/] },
+    { t: 'Coal and iron mines opened (1872)', p: 3, m: [/\bcoal\b|\biron\b|mines?\b|mining/] },
+    { t: 'The China Merchants\' Steam Navigation Company (1872)', p: 5, m: [/steam navigation|merchants.? steam|shipping company/] },
+    { t: 'Telegraph lines: Taku–Tianjin (1879) and Shanghai–Tianjin (1881)', p: 5, m: [/telegraph|1879|1881/] },
+    { t: 'Cotton and textile mills at Wuchang (1893)', p: 5, m: [/cotton|textile|1893|wuchang/] },
+    { t: 'It helped crush the Taiping and Nian rebels', p: 3, m: [/taiping|\bnian\b|rebels?/] },
+    { t: 'Modern arsenals and weapons factories', p: 1, m: [/arsenals?|weapons|factor/] },
   ]},
   { id: 'sjw', short: 'Sino-Japanese War 1894–95', q: 'Why did China lose the First Sino-Japanese War (1894–95)?', a: [
     { t: 'Navy money went on Cixi\'s Summer Palace instead', p: 5, m: [/summer palace|marble boat|navy fund/] },
@@ -814,6 +881,8 @@ const IB_TOPICS = [
     { t: 'Outdated weapons and poorly trained troops', p: 3, m: [/outdated|obsolete|training|untrained|badly trained|poorly trained/] },
     { t: 'Rivalry between Li Hongzhang and Manchu officials', p: 3, m: [/rivalr|faction|manchu/] },
     { t: 'Corruption in the Qing state and military', p: 1, m: [/corrupt/] },
+    { t: 'At the Yalu, about 90 Japanese died against over 1,000 Chinese', p: 5, m: [/\b90\b|1 ?000 chinese/] },
+    { t: 'China had 65 ships to Japan\'s 32 but they were older and slower', p: 5, m: [/\b65\b|\b32\b/] },
   ]},
   { id: 'after95', short: 'After 1895: the scramble', q: 'What were the consequences of the Sino-Japanese War for China (1895–1900)?', a: [
     { t: 'Treaty of Shimonoseki, April 1895', p: 3, m: [/shimonoseki/] },
@@ -875,6 +944,9 @@ const IB_TOPICS = [
     { t: 'Humiliation after the defeat by Japan (1895)', p: 3, m: [/humiliat|japan|\b1895\b/] },
     { t: 'Boxers believed martial arts and rituals gave them magic powers', p: 3, m: [/martial arts?|magic|spirits?\b|rituals?|kung ?fu/] },
     { t: 'The Society of Righteous and Harmonious Fists, a secret society', p: 5, m: [/righteous|harmonious fists?|yihequan|secret societ/] },
+    { t: 'Cixi blamed foreigners: she had fled Beijing in 1860', p: 5, m: [/1860|fled (the capital|beijing|peking)/] },
+    { t: 'Foreigners helped the 1898 reformers escape, angering Cixi', p: 5, m: [/helped (the )?(reformers|rebels|kang)|escape/] },
+    { t: 'Missionaries protected their converts in lawsuits, angering the gentry', p: 3, m: [/protect\w* (their )?converts|lawsuits?|legal cases|gentry/] },
   ]},
   { id: 'boxresult', short: 'Boxer Rebellion: results', q: 'What were the consequences of the Boxer Rebellion?', a: [
     { t: 'The Boxer Protocol, September 1901', p: 3, m: [/protocol|\b1901\b/] },
@@ -896,6 +968,27 @@ const IB_TOPICS = [
     { t: 'The powers chose not to partition China', p: 3, m: [/partition|carve up|open door/] },
     { t: 'Anti-foreign feeling turned into modern nationalism', p: 3, m: [/nationalis/] },
     { t: 'It led towards the fall of the dynasty in 1911', p: 3, m: [/\b1911\b|downfall|collapse|fall of the (qing|dynasty)/] },
+    { t: 'The German minister was killed (20 June 1900) and the court declared war (21 June)', p: 5, m: [/german minister|ketteler|20 june|21 june|declared war/] },
+    { t: 'The Boxers besieged the foreign legations in Beijing', p: 5, m: [/legations?|siege|besieg/] },
+  ]},
+  { id: 'qingref', short: 'Late Qing reforms 1901–11', q: 'What were the late Qing reforms (1901–11), and why did they fail to save the dynasty?', a: [
+    { t: 'A response to the Boxer disaster and foreign humiliation', p: 3, m: [/boxer|humiliat|\b1901\b/] },
+    { t: 'Exam essays switched from the old eight-part style to current affairs (1902)', p: 5, m: [/eight.?legged|eight.?part|1902|current affairs/] },
+    { t: 'The civil service exams were abolished (1905)', p: 5, m: [/civil service|exams?\b|examination|1905/] },
+    { t: 'Western-style schools and a modern curriculum', p: 3, m: [/schools?\b|curriculum|educat/] },
+    { t: 'A new generation trained in Western ideas turned against tradition', p: 3, m: [/new generation|students|western ideas|political(ly)? conscious/] },
+    { t: 'Princes were sent abroad to study foreign constitutions (1905)', p: 5, m: [/princes|study (foreign )?constitutions|sent abroad/] },
+    { t: 'Six old boards became eleven Western-style ministries (1906)', p: 5, m: [/ministr(y|ies)|boards|1906/] },
+    { t: 'The new posts went mostly to Manchus, angering Han Chinese', p: 3, m: [/manchu|\bhan\b/] },
+    { t: 'Provincial powers were cut and armies moved under a new Ministry of the Army (1907)', p: 5, m: [/ministry of the army|1907|provincial (power|armies|governors)/] },
+    { t: 'Yuan Shikai lost part of his army and was brought to Beijing', p: 5, m: [/yuan/] },
+    { t: 'The New Army was trained on Western lines', p: 3, m: [/new army|army reform|military reform/] },
+    { t: 'The 1908 Outline of a Constitution, with a nine-year preparation period', p: 5, m: [/outline|\b9\b|nine.?year|1908/] },
+    { t: 'Provincial assemblies (1909) became platforms for critics', p: 5, m: [/assembl|1909/] },
+    { t: 'The wait was cut to six years (1910) after public anger', p: 5, m: [/\b6\b|six years|1910/] },
+    { t: 'The May 1911 "Royal Cabinet": 8 Manchus and only 4 Han Chinese', p: 5, m: [/royal cabinet|8 manchus|cabinet/] },
+    { t: 'They raised expectations they could not meet', p: 3, m: [/expectation|too little|too late|placat/] },
+    { t: 'They made the Qing look weak', p: 1, m: [/\bweak/] },
   ]},
   { id: 'xinhai', short: '1911 Revolution', q: 'Why did the 1911 Revolution break out?', a: [
     { t: 'Railway Protection Movement: Sichuan railways nationalised (May 1911) and sold to foreign banks', p: 5, m: [/railway|sichuan|szechwan/] },
@@ -940,6 +1033,7 @@ const IB_TOPICS = [
     { t: 'Sun Yat-sen handed the presidency to Yuan in 1912', p: 3, m: [/handed|stepped down|gave up|president/] },
     { t: 'Armies were loyal to their own commanders, not the state', p: 3, m: [/loyal|personal armies|private armies/] },
     { t: 'China split between north and south', p: 3, m: [/north.?south|divided|split|fragment/] },
+    { t: 'Yuan dismissed the pro-GMD military governors (May 1913)', p: 5, m: [/military governors|may 1913/] },
   ]},
   { id: 'warlords', short: 'Effects of warlordism', q: 'What were the effects of warlordism (1916–28)?', a: [
     { t: 'Taxes on peasants rose up to five-fold', p: 5, m: [/five.?fold|5 ?times|five times/] },
@@ -962,6 +1056,7 @@ const IB_TOPICS = [
     { t: 'Trade and farming were disrupted', p: 3, m: [/econom|trade|disrupt|farming/] },
     { t: 'Foreign powers, especially Japan, took advantage', p: 3, m: [/japan|foreign (influence|power|interference)|took advantage/] },
     { t: 'It led to the rise of the GMD and the Northern Expedition', p: 3, m: [/northern expedition|\bgmd\b|guomindang|\bkmt\b/] },
+    { t: 'Foreigners owned 77% of shipping and 45% of cotton spindles', p: 5, m: [/\b77\b|spindles|shipping/] },
   ]},
   { id: 'may4', short: 'May Fourth Movement 1919', q: 'What caused the May Fourth Movement (1919), and what did it lead to?', a: [
     { t: 'The Treaty of Versailles gave Germany\'s Shandong rights to Japan', p: 5, m: [/versailles|shandong|qingdao/] },
@@ -984,6 +1079,9 @@ const IB_TOPICS = [
     { t: 'China\'s first mass, student-led patriotic movement', p: 3, m: [/students?|protest|demonstrat/] },
     { t: 'It revived Sun Yat-sen\'s GMD', p: 3, m: [/\bgmd\b|guomindang|\bkmt\b|sun yat/] },
     { t: 'New ideas about women\'s rights and the family', p: 3, m: [/women|family|marriage/] },
+    { t: 'Police arrested 32 students', p: 5, m: [/\b32\b|arrested/] },
+    { t: 'Li Dazhao set up Marxist study groups at Beida', p: 5, m: [/li da ?zhao|study (groups|societies)/] },
+    { t: 'The CCP was founded with only 57 members (12 delegates)', p: 5, m: [/\b57\b|12 delegates/] },
   ]},
   { id: 'uf1', short: 'First United Front 1923–27', q: 'Why was the First United Front formed, and why did it collapse?', a: [
     { t: 'Sun was desperate: appeals to the West and Japan had failed', p: 3, m: [/\bwest|desperat|japan/] },
@@ -1007,6 +1105,24 @@ const IB_TOPICS = [
     { t: 'GMD landlords and businessmen feared CCP peasant and worker movements', p: 3, m: [/landlord|business|peasant|worker|union|strike/] },
     { t: 'The CCP grew fast inside the GMD: about 300 members (1922) to 58,000 (1927)', p: 5, m: [/58,?000|\b300\b/] },
     { t: 'Jiang Jieshi turned against the CCP', p: 1, m: [/chiang|jiang/] },
+    { t: '52 were killed in the Shamian shooting (23 June 1925)', p: 5, m: [/\b52\b|23 june|shamian|shakee/] },
+  ]},
+  { id: 'northexp', short: 'Northern Expedition 1926–28', q: 'Why was the Northern Expedition (1926–28) successful?', a: [
+    { t: 'Launched in July 1926 to defeat the warlords and reunify China', p: 3, m: [/july 1926|\b1926\b|reunif|unif/] },
+    { t: 'Jiang Jieshi led it as commander-in-chief', p: 3, m: [/jiang|chiang|commander/] },
+    { t: 'Whampoa-trained officers were loyal to Jiang', p: 5, m: [/whampoa|huangpu/] },
+    { t: 'Soviet weapons, money and advisers (Borodin, Blyukher)', p: 5, m: [/soviet|ussr|russia|borodin|blyukher|galen/] },
+    { t: 'The National Revolutionary Army was disciplined and motivated', p: 3, m: [/disciplin|motivat|morale|national revolutionary army|\bnra\b/] },
+    { t: 'CCP agitators won over peasants and workers ahead of the army', p: 3, m: [/peasants?|workers?|\bccp\b|communist|propaganda|unions?/] },
+    { t: 'Anger after the May 30th Incident (1925) fuelled nationalism', p: 5, m: [/may 30|30 may|may thirtieth|nationalis/] },
+    { t: 'The warlords were divided and fought each other', p: 3, m: [/divided|feud|rival|disunit/] },
+    { t: 'Main targets: Wu Peifu, Sun Chuanfang and Zhang Zuolin', p: 5, m: [/wu pei ?fu|sun chuan ?fang|zhang zuo ?lin/] },
+    { t: 'Hunan generals switched to the GMD side', p: 5, m: [/hunan|tang sheng ?zhi|defect|switched sides/] },
+    { t: 'Some warlords joined rather than fought (Feng Yuxiang, Yan Xishan)', p: 5, m: [/feng yu ?xiang|yan xi ?shan|allied|alliance/] },
+    { t: '34 warlords were defeated in the first six months', p: 5, m: [/\b34\b/] },
+    { t: 'Shanghai and Nanjing were taken (1927)', p: 3, m: [/shanghai|nanjing|nanking|1927/] },
+    { t: 'Beijing fell and China was nominally unified (1928)', p: 3, m: [/1928|beijing|peking|nominal/] },
+    { t: 'Shanghai merchants and bankers funded Jiang', p: 3, m: [/merchants?|bankers?|business|funded|funding|green gang/] },
   ]},
   { id: 'nanjing', short: 'Nanjing Decade 1927–37', q: 'How successful was Jiang Jieshi\'s Nanjing Decade (1927–37)?', a: [
     { t: 'Railways grew from 8,000 km to 13,000 km', p: 5, m: [/\b8,?000\b|\b13,?000\b|railway/] },
@@ -1032,6 +1148,8 @@ const IB_TOPICS = [
     { t: 'The gap between cities and countryside widened', p: 3, m: [/urban|rural|cities|countryside/] },
     { t: 'The economy grew about 4% a year', p: 3, m: [/growth|grew|gdp/] },
     { t: '"Internal pacification first": he fought the CCP before Japan', p: 5, m: [/internal (pacification|enem)|pacification first|first internal/] },
+    { t: 'Four national banks and a fixed exchange rate were set up', p: 5, m: [/national banks?|bank of china|exchange rate/] },
+    { t: '14,000 post offices and 95,300 km of telegraph lines by 1936', p: 5, m: [/14 ?000|95 ?300|post offices?/] },
   ]},
   { id: 'ccp27', short: 'CCP survival 1927–36', q: 'How did the CCP survive between 1927 and 1936?', a: [
     { t: 'Mao and Zhu De built the Jiangxi Soviet (Ruijin)', p: 5, m: [/jiangxi|ruijin|soviet|zhu ?de/] },
@@ -1085,11 +1203,249 @@ const IB_TOPICS = [
     { t: 'The Second United Front (1937)', p: 3, m: [/united front/] },
     { t: 'CCP guerrilla warfare behind Japanese lines', p: 3, m: [/guerr?ill?a|behind (enemy|japanese) lines/] },
     { t: 'US aid went to the GMD but much was wasted', p: 3, m: [/\bus\b|america|lend.?lease|\baid\b/] },
+    { t: 'Japanese reprisals cut the CCP-held population from 44 to 25 million', p: 5, m: [/\b44\b|25 million/] },
+  ]},
+  { id: 'uf2', short: 'Second United Front 1937–41', q: 'Why did the Second United Front fail?', a: [
+    { t: 'It was formed only under pressure after the Xi\'an Incident (1936)', p: 3, m: [/xi ?an|1936|kidnap/] },
+    { t: 'The Red Army became the Eighth Route Army under GMD command', p: 5, m: [/eighth route|8th route/] },
+    { t: 'The CCP\'s guerrilla army never really took GMD orders', p: 3, m: [/guerr?ill?a|orders|command|control/] },
+    { t: 'Yan\'an was too remote for the GMD to control', p: 3, m: [/remote|yan ?an|shaanxi/] },
+    { t: 'Both claimed Sun\'s Three Principles but disagreed on them', p: 3, m: [/three principles|3 principles|\b3pp\b|\bsun\b/] },
+    { t: 'Deep distrust after the 1927 massacres', p: 3, m: [/distrust|trust|suspic|1927|enemies/] },
+    { t: 'Jiang used his best troops to blockade Yan\'an (1939)', p: 5, m: [/blockade|1939/] },
+    { t: 'The Hundred Regiments Offensive (1940) boosted the CCP', p: 5, m: [/hundred regiments|100 regiments|peng de ?huai|1940/] },
+    { t: 'Japan\'s "Three Alls" reprisals drove peasants to the CCP', p: 3, m: [/three alls|3 alls|kill all|scorched earth/] },
+    { t: 'The CCP grew too strong for the GMD to tolerate', p: 3, m: [/grew|growth|expan|too strong|membership/] },
+    { t: 'The clash at Huangqiao (October 1940)', p: 5, m: [/huangqiao/] },
+    { t: 'The New Fourth Army Incident (January 1941) ended it', p: 5, m: [/new (fourth|4th) army|anhui incident|january 1941|\b1941\b|maolin/] },
+    { t: 'About 7,000 of 9,000 New Fourth Army troops were killed or captured', p: 5, m: [/\b7 ?000\b|\b9 ?000\b/] },
+    { t: 'Each side cared more about beating the other than beating Japan', p: 3, m: [/selfish|each other|own interests|civil war/] },
+  ]},
+  { id: 'tokugawa', short: 'Fall of the Tokugawa', q: 'Why did the Tokugawa shogunate collapse in 1868?', a: [
+    { t: 'Samurai stipends were cut by up to 50%', p: 5, m: [/stipend|\b50\b/] },
+    { t: 'Many samurai fell into poverty, below rich merchants', p: 3, m: [/samurai/] },
+    { t: 'Lower samurai resented the rigid class system', p: 3, m: [/rigid|class system|mobility/] },
+    { t: 'A rich merchant class rose (the Osaka financiers)', p: 3, m: [/merchants?|osaka|financ|banks?\b/] },
+    { t: 'Daimyo fell into debt to merchants', p: 3, m: [/debts?|loans?|interest/] },
+    { t: 'Government spending outran income; corruption and bad management', p: 3, m: [/expenditure|spending|corrupt|income|budget/] },
+    { t: 'Famines and peasant uprisings, about 12 a year in the 1800s', p: 5, m: [/\b12\b|uprisings?|famines?|peasant revolts?|riots?/] },
+    { t: 'Commodore Perry\'s "black ships" arrived (July 1853)', p: 5, m: [/perry|black ships|1853/] },
+    { t: 'The Treaty of Kanagawa (1854) and later unequal treaties (Harris Treaty)', p: 5, m: [/kanagawa|1854|harris|unequal treat/] },
+    { t: 'The shogun had to ask the daimyo for advice, exposing weakness', p: 3, m: [/bakufu|advice|opinion|debate/] },
+    { t: 'Chief minister Ii Naosuke was assassinated (1860)', p: 5, m: [/\bii\b|\bli naosuke|naosuke|1860/] },
+    { t: 'Alternate attendance (hostages in Edo) was relaxed', p: 5, m: [/alternate attendance|sankin|hostages?/] },
+    { t: 'Choshu and Satsuma formed a secret alliance (1866)', p: 5, m: [/choshu|satsuma|1866|sat ?cho/] },
+    { t: 'Their troops defeated the shogun\'s forces and restored the emperor (January 1868)', p: 3, m: [/1868|boshin|emperor|restoration|mutsuhito/] },
+    { t: '"Sonno joi": revere the emperor, expel the barbarians', p: 5, m: [/sonno|\bjoi\b|expel the barbarians?/] },
+    { t: 'Foreign pressure exposed the shogunate as weak', p: 1, m: [/\bweak|foreign/] },
+  ]},
+  { id: 'meiji', short: 'Meiji modernisation', q: 'How did Meiji Japan modernise (1868–1912)?', a: [
+    { t: '"Fukoku kyohei": enrich the country, strengthen the army', p: 5, m: [/fukoku|kyohei|enrich the country/] },
+    { t: 'The Iwakura Mission to the USA and Europe (1871–73)', p: 5, m: [/iwakura|1871/] },
+    { t: 'Over 3,000 foreign advisers were hired', p: 5, m: [/\b3 ?000\b|foreign advis|oyatoi/] },
+    { t: 'About 11,000 passports issued for study abroad (1868–1902)', p: 5, m: [/\b11 ?000\b|study abroad|overseas study|passports/] },
+    { t: 'Conscription was introduced (1872–73)', p: 5, m: [/conscript/] },
+    { t: 'An Imperial Army and Navy (1873), the navy modelled on Britain\'s', p: 3, m: [/imperial (japanese )?(army|navy)|1873|royal navy/] },
+    { t: 'The samurai class and domain armies were abolished', p: 3, m: [/abolish|samurai|domains?|daimyo/] },
+    { t: 'Warships rose from 17 to 76 (1872–1903)', p: 5, m: [/\b17\b|\b76\b|warships/] },
+    { t: 'A Ministry of Industry (1870) built mines, railways and telegraphs', p: 5, m: [/ministry of industry|1870|railways?|telegraph/] },
+    { t: 'Land tax reform (1873): a fixed money tax', p: 5, m: [/land tax/] },
+    { t: 'A Ministry of Education (1871) and the 1872 Education Code', p: 5, m: [/ministry of education|education code|fundamental code/] },
+    { t: 'Four years\' compulsory schooling; over 90% attending by 1900', p: 5, m: [/compulsory|\b90\b|four years|4 years/] },
+    { t: 'Supreme Court (1875), criminal code (1883) and civil code (1898)', p: 5, m: [/supreme court|criminal code|civil code|legal (system|codes?)/] },
+    { t: 'Western dress, technology and institutions were adopted', p: 3, m: [/western (dress|clothes|technology|institutions|ideas)|westernis/] },
+    { t: 'Zaibatsu business groups like Mitsui and Mitsubishi grew', p: 5, m: [/zaibatsu|mitsui|mitsubishi/] },
+    { t: 'The aim was equality with the West and an end to unequal treaties', p: 3, m: [/equal|parity|unequal treat|revision/] },
+    { t: 'Victory over China (1894–95) showed the reforms worked', p: 3, m: [/sino.?japanese|\bchina\b|1894|1895/] },
+  ]},
+  { id: 'meijicon', short: 'Meiji Constitution 1889', q: 'Why was the Meiji Constitution introduced, and how democratic was it?', a: [
+    { t: 'The Charter Oath (April 1868) promised deliberative assemblies', p: 5, m: [/charter oath|1868|deliberative/] },
+    { t: 'The Freedom and People\'s Rights (Minken) movement', p: 5, m: [/minken|people.?s rights/] },
+    { t: 'Itagaki Taisuke resigned (1873) and led the protests', p: 5, m: [/itagaki|1873|tosa/] },
+    { t: 'Anger at Satsuma and Choshu dominating government', p: 3, m: [/satsuma|choshu|monopoly/] },
+    { t: 'Okuma Shigenobu proposed British-style government (1881) and was ousted', p: 5, m: [/okuma|1881/] },
+    { t: 'New parties: the Jiyuto (Liberal) and Kaishinto (Progressive)', p: 5, m: [/jiyuto|kaishinto|liberal party|progressive party/] },
+    { t: 'The emperor promised a constitution and parliament by 1890', p: 3, m: [/1890|promis/] },
+    { t: 'Ito Hirobumi studied constitutions in Germany and Austria (1882)', p: 5, m: [/\bito\b|hirobumi|germany|prussia|austria|1882/] },
+    { t: 'A peerage (1884), cabinet (1885) and privy council (1888) came first', p: 5, m: [/peerage|1884|cabinet|privy council|1885|1888/] },
+    { t: 'The emperor was sacred and held supreme power', p: 3, m: [/emperor|sacred|divine|sovereign/] },
+    { t: 'A two-house Diet: House of Peers and elected House of Representatives', p: 3, m: [/\bdiet\b|house of peers|bicameral|two.?house|house of representatives/] },
+    { t: 'Only men over 25 paying 15 yen in tax could vote (about 1%)', p: 5, m: [/15 yen|\b25\b|property|\b1\b|tax.?pay/] },
+    { t: 'The army had direct access to the emperor', p: 5, m: [/direct access|independent access|supreme command/] },
+    { t: 'The genro oligarchs kept real power', p: 3, m: [/genro|oligarch|elder statesmen/] },
+    { t: 'The Imperial Rescript on Education (1890)', p: 5, m: [/rescript/] },
+    { t: 'A modest step towards parliamentary government', p: 1, m: [/modest|limited|parliament/] },
+  ]},
+  { id: 'korea76', short: 'Opening of Korea 1876', q: 'Why was Korea forced open in 1876, and what followed?', a: [
+    { t: 'Korea was an isolationist "hermit kingdom"', p: 3, m: [/hermit|isolation/] },
+    { t: 'Korea relied on China ("sadae", serving the great)', p: 5, m: [/sadae|tributar|serving the great|relied on china/] },
+    { t: 'The General Sherman incident (1866)', p: 5, m: [/general sherman|1866/] },
+    { t: 'A US expedition (1871) exposed Korea\'s military weakness', p: 5, m: [/1871|american expedition|us expedition/] },
+    { t: 'The Daewongun\'s anti-foreign policy', p: 5, m: [/dae ?won ?gun|tae ?won ?gun/] },
+    { t: 'Queen Min\'s clan took control of the court', p: 5, m: [/queen min|min clan/] },
+    { t: 'The Ganghwa Incident (1875): the Japanese gunboat Unyo', p: 5, m: [/unyo|1875|ganghwa incident/] },
+    { t: 'Japan\'s gunboat diplomacy: the Kuroda Mission (1876)', p: 5, m: [/gunboat|kuroda/] },
+    { t: 'The Treaty of Ganghwa (1876), an unequal treaty', p: 3, m: [/ganghwa|kanghwa|1876/] },
+    { t: 'Ports opened and Japan got extraterritoriality', p: 5, m: [/extraterritorial|ports?\b|busan|incheon|wonsan/] },
+    { t: 'Japan wanted Korea\'s raw materials and markets', p: 3, m: [/raw materials|markets?|econom|\brice\b|resources/] },
+    { t: 'Treaties followed with the USA (1882), Britain (1883) and Russia (1884)', p: 5, m: [/1882|1883|1884|shufeldt|united states|britain|russia/] },
+    { t: 'The Imo Incident (1882) and Gapsin Coup (1884)', p: 5, m: [/\bimo\b|gapsin|kapsin/] },
+    { t: 'China–Japan rivalry over Korea led to war in 1894', p: 3, m: [/rivalr|sino.?japanese|1894|tonghak|donghak/] },
+    { t: 'Korea slid into semi-colonial status', p: 3, m: [/semi.?colon|sovereign|independen/] },
+  ]},
+  { id: 'jexpand', short: 'Japan as a great power 1894–1910', q: 'How did Japan become a great power between 1894 and 1910?', a: [
+    { t: 'Victory over China in 1894–95', p: 3, m: [/sino.?japanese|1894|1895|\bchina\b/] },
+    { t: 'Treaty of Shimonoseki: Taiwan, the Pescadores and a 200m tael indemnity', p: 5, m: [/shimonoseki|taiwan|formosa|pescadores|\b200\b/] },
+    { t: 'The Triple Intervention (1895) forced Japan to return Liaodong', p: 5, m: [/triple intervention|liaodong|liaotung/] },
+    { t: 'A third of the budget on the military; navy spending up 285%', p: 5, m: [/\b33\b|285|budget|third/] },
+    { t: 'The Anglo-Japanese Alliance (1902)', p: 5, m: [/anglo.?japanese|1902|britain|alliance/] },
+    { t: 'Victory over Russia (1904–05)', p: 3, m: [/russia|1904|1905/] },
+    { t: 'The Treaty of Portsmouth (1905): Russia accepted Japan\'s control of Korea', p: 5, m: [/portsmouth/] },
+    { t: 'Korea became a protectorate (1905) and was annexed (1910)', p: 5, m: [/korea|protectorate|1910|annex/] },
+    { t: 'The South Manchurian Railway Company (1906)', p: 5, m: [/south manchuria|1906|railway/] },
+    { t: 'The Root–Takahira Agreement with the USA (1908)', p: 5, m: [/root.?takahira|1908/] },
+    { t: 'The unequal treaties ended: extraterritoriality in 1899, tariff control in 1911', p: 5, m: [/extraterritorial|1899|1911|tariffs?|unequal treat/] },
+    { t: 'Trade with China rose from 8.4% to 25% of Japan\'s trade', p: 5, m: [/8\.4|\b25\b/] },
+    { t: 'Japan was the first Asian state treated as an equal by the West', p: 3, m: [/equal|parity|recogni|first asian/] },
+    { t: 'Meiji military and industrial modernisation', p: 1, m: [/meiji|moderni|fukoku/] },
+  ]},
+  { id: 'rjw', short: 'Russo-Japanese War 1904–05', q: 'Why did Japan win the Russo-Japanese War (1904–05)?', a: [
+    { t: 'A surprise attack on Port Arthur (February 1904)', p: 5, m: [/port arthur|surprise attack|february 1904/] },
+    { t: 'Port Arthur fell (January 1905) after a long siege', p: 5, m: [/siege|january 1905/] },
+    { t: 'Japan took Mukden, the capital of Manchuria', p: 5, m: [/mukden/] },
+    { t: 'The Battle of Tsushima (1905): 45 of 49 Russian ships destroyed', p: 5, m: [/tsushima|\b45\b|\b49\b/] },
+    { t: 'Admiral Togo\'s modern, well-trained navy', p: 5, m: [/togo/] },
+    { t: 'Russia\'s Baltic Fleet had to sail halfway round the world', p: 5, m: [/baltic|detour|long (journey|voyage)/] },
+    { t: 'Britain closed the Suez Canal to the Russian fleet', p: 5, m: [/suez/] },
+    { t: 'The Anglo-Japanese Alliance kept France out of the war', p: 5, m: [/anglo.?japanese|alliance|britain|france/] },
+    { t: 'Russian ships were slower', p: 3, m: [/slower|slow ships/] },
+    { t: 'Russian commanders were incompetent and used outdated tactics', p: 3, m: [/incompeten|outdated|bayonet|19th century|high command/] },
+    { t: 'Admiral Alexeev knew little about war', p: 5, m: [/alexeev|alekseyev/] },
+    { t: 'Japan had 180,000 men in Korea; Russia only 100,000 in Manchuria', p: 5, m: [/180 ?000|100 ?000/] },
+    { t: 'Russia relied on the single-track Trans-Siberian Railway for supplies', p: 5, m: [/trans.?siberian|railway|suppl/] },
+    { t: 'The 1905 Revolution distracted Russia', p: 5, m: [/revolution|unrest/] },
+    { t: 'Bezobrazov pushed the Tsar to reject Japan\'s offer', p: 5, m: [/bezobrazov/] },
+    { t: 'Russian arrogance led them to underestimate Japan', p: 3, m: [/arrogan|underestimat|complacen|racis|superior/] },
+    { t: 'Meiji military modernisation paid off', p: 3, m: [/meiji|moderni|conscript|fukoku/] },
+    { t: 'Japan\'s forces were better trained and led', p: 1, m: [/better (trained|led|prepared)|training|disciplin/] },
+  ]},
+  { id: 'annex', short: 'Annexation of Korea 1910', q: 'Why did Japan annex Korea in 1910, and how did it rule?', a: [
+    { t: 'Japanese imperialism: matching the Western empires', p: 3, m: [/imperialis|parity|western (empires|powers)|colon/] },
+    { t: 'Victories over China (1895) and Russia (1905) removed its rivals', p: 5, m: [/sino.?japanese|russo.?japanese|1895|portsmouth|\bchina\b|russia/] },
+    { t: 'Korea became a protectorate (1905)', p: 5, m: [/protectorate|1905/] },
+    { t: 'A 1907 treaty gave Japan control of Korea\'s internal affairs', p: 5, m: [/1907|internal affairs/] },
+    { t: 'Ito Hirobumi ruled as Resident-General', p: 5, m: [/\bito\b|hirobumi|resident.?general/] },
+    { t: 'Ito was assassinated by An Jung-geun (1909)', p: 5, m: [/an jung ?geun|1909/] },
+    { t: 'The Annexation Treaty (22 August 1910)', p: 5, m: [/august 1910|annexation treaty|1910/] },
+    { t: 'Korea\'s government was weak, corrupt and taxed heavily', p: 3, m: [/\bweak|corrupt|\btax/] },
+    { t: 'The court was divided (Queen Min, Gojong, the Taewongun)', p: 3, m: [/gojong|kojong|dae ?won ?gun|tae ?won ?gun|divided|division/] },
+    { t: 'Japanese agents assassinated Queen Min (1895)', p: 5, m: [/queen min/] },
+    { t: 'The Western powers accepted it (Root–Takahira, Anglo-Japanese Alliance)', p: 5, m: [/root.?takahira|anglo.?japanese|1908/] },
+    { t: 'Japan came to own 40% of Korea\'s land', p: 5, m: [/\b40\b|\bland\b/] },
+    { t: 'Rice and soybeans went to Japan while Koreans ate millet', p: 5, m: [/\brice\b|soy|millet/] },
+    { t: 'Coal, iron, gold and copper were taken', p: 3, m: [/\bcoal\b|\biron\b|\bgold\b|copper|resources/] },
+    { t: '725,000 Koreans were moved to work for Japan', p: 5, m: [/\b725\b/] },
+    { t: 'The Korean language was banned in schools', p: 5, m: [/language|korean (was )?banned/] },
+    { t: 'Koreans were forced into Shinto worship of the emperor', p: 5, m: [/shinto|worship/] },
+    { t: 'Media control; over 200,000 historical documents destroyed', p: 5, m: [/\b200 ?000\b|documents|media|newspapers?|history/] },
+    { t: 'Part of Gyeongbokgung Palace was torn down', p: 5, m: [/gyeongbok|palace/] },
+  ]},
+  { id: 'taisho', short: 'Taisho democracy', q: 'Why did democracy grow in Japan in the 1910s and 1920s, and how far did it go?', a: [
+    { t: 'The Taisho political crisis after Emperor Meiji died (1912)', p: 5, m: [/taisho (political )?crisis|1912|meiji died/] },
+    { t: 'Parties grew as the genro oligarchs died off', p: 3, m: [/genro|oligarch|died off|elder statesmen/] },
+    { t: 'Hara Takashi became the first commoner Prime Minister (1918)', p: 5, m: [/\bhara\b|1918|commoner/] },
+    { t: 'The 1918 Rice Riots involved over 1 million people', p: 5, m: [/rice riots?|1 million/] },
+    { t: 'The WWI boom created a bigger middle class', p: 3, m: [/world war|\bww1\b|\bwwi\b|boom|middle class/] },
+    { t: 'Universal male suffrage (1925) raised voters to about 12.5 million', p: 5, m: [/suffrage|12\.5|\bvotes?\b|voters/] },
+    { t: 'Kato Komei\'s three-party coalition (1924)', p: 5, m: [/\bkato\b|1924|coalition/] },
+    { t: 'A two-party system: Seiyukai against Kenseikai/Minseito', p: 5, m: [/seiyukai|kenseikai|minseito|two.?party/] },
+    { t: 'Peaceful foreign policy: League of Nations and Shidehara diplomacy', p: 3, m: [/league of nations|washington|shidehara|nine.?power/] },
+    { t: 'Seito (Bluestockings) magazine and women\'s rights', p: 5, m: [/seito|bluestocking|women/] },
+    { t: 'Modern city culture: moga and mobo, cinemas and dance halls', p: 5, m: [/\bmoga\b|\bmobo\b|dance halls?|cinema|modern girl/] },
+    { t: 'Limit: the 1925 Peace Preservation Law banned socialism', p: 5, m: [/peace preservation|socialis|1925/] },
+    { t: 'Limit: the House of Peers blocked women\'s suffrage (1931)', p: 5, m: [/house of peers|1931/] },
+    { t: 'Limit: the army stayed independent of the government', p: 3, m: [/\barmy\b|military|independen/] },
+    { t: 'Limit: Professor Minobe was attacked for his "organ theory"', p: 5, m: [/minobe|organ theory/] },
+    { t: 'Limit: liberal leaders were assassinated (Hara, 1921)', p: 3, m: [/assassinat|1921/] },
+    { t: 'Limit: party corruption and zaibatsu links ("Mitsui cabinet")', p: 3, m: [/corrupt|zaibatsu|mitsui|mitsubishi/] },
+  ]},
+  { id: 'manchuria', short: 'Manchurian Crisis 1931', q: 'Why did Japan invade Manchuria in 1931?', a: [
+    { t: 'The Great Depression halved Japan\'s exports (1929–31)', p: 5, m: [/depression|exports?|\b50\b/] },
+    { t: 'Silk cocoon prices fell 65% and rice prices collapsed', p: 5, m: [/\bsilk\b|\b65\b|rice prices?/] },
+    { t: 'Unemployment reached about 3 million', p: 5, m: [/3 million|unemploy/] },
+    { t: 'People blamed the parties and liberalism', p: 3, m: [/blamed|liberalism|parties|politicians/] },
+    { t: 'The parties seemed corrupt and tied to the zaibatsu', p: 3, m: [/corrupt|zaibatsu|mitsui|mitsubishi/] },
+    { t: 'Ultra-nationalist societies grew (Black Dragon, Cherry Blossom, Kita Ikki)', p: 5, m: [/black dragon|ultra.?national|kita ikki|patriotic societ|cherry blossom/] },
+    { t: 'The Kwantung Army acted without government orders', p: 5, m: [/kwantung|kwangtung|without (government )?(orders|permission|approval)|independen/] },
+    { t: 'The Mukden Incident (18 September 1931) was staged as a pretext', p: 5, m: [/mukden|18 september|pretext|staged|false flag/] },
+    { t: 'The army\'s murder of Zhang Zuolin (1928) showed it ignoring Tokyo', p: 5, m: [/zhang zuo ?lin|1928/] },
+    { t: 'Manchuria was rich in coal, iron and farmland', p: 3, m: [/raw materials|resources|\bcoal\b|\biron\b|farmland/] },
+    { t: '75% of foreign investment in Manchuria was Japanese', p: 5, m: [/\b75\b|investment/] },
+    { t: 'Manchuria was a buffer against Soviet communism', p: 3, m: [/buffer|soviet|russia|communis/] },
+    { t: 'Rising Chinese nationalism threatened Japan\'s position', p: 3, m: [/chinese nationalis|jiang|chiang|\bgmd\b|reunif/] },
+    { t: 'US immigration law (1924) and the Hawley–Smoot tariff (1930)', p: 5, m: [/immigration|1924|hawley|smoot|tariff/] },
+    { t: 'Shidehara\'s peaceful diplomacy seemed to have failed', p: 3, m: [/shidehara|diplomacy/] },
+    { t: 'Population pressure: land for Japanese settlers', p: 3, m: [/population|settlers?|overpopul|living space/] },
+  ]},
+  { id: 'pearl', short: 'Road to Pearl Harbour', q: 'Why did Japan attack Pearl Harbour in December 1941?', a: [
+    { t: 'The army came to dominate the government in the 1930s', p: 3, m: [/\barmy\b|military|militaris/] },
+    { t: 'Prime Minister Inukai was assassinated (May 1932)', p: 5, m: [/inukai|1932/] },
+    { t: 'The February 1936 coup attempt strengthened the army', p: 5, m: [/1936|coup/] },
+    { t: 'General Tojo became Prime Minister (October 1941)', p: 5, m: [/tojo/] },
+    { t: 'Japan left the League of Nations (1933)', p: 5, m: [/league of nations|1933|lytton/] },
+    { t: 'Japan scrapped the Washington Naval Treaty (1934)', p: 5, m: [/washington|naval treaty|1934/] },
+    { t: 'The war in China (from Marco Polo Bridge, 1937) could not be won', p: 3, m: [/marco polo|1937|\bchina\b|stuck/] },
+    { t: 'The Panay incident (1937) angered the USA', p: 5, m: [/panay|ladybird/] },
+    { t: 'US aid to China, e.g. a $25 million loan (1938)', p: 5, m: [/25 million|loan|aid to china|1938/] },
+    { t: 'The "New Order in East Asia" (1938) and Co-Prosperity Sphere (1940)', p: 5, m: [/new order|co.?prosperity|geacps/] },
+    { t: 'The Tripartite Pact with Germany and Italy (September 1940)', p: 5, m: [/tripartite|\baxis\b|germany|italy/] },
+    { t: 'The Neutrality Pact with the USSR (April 1941) freed Japan to move south', p: 5, m: [/neutrality pact|april 1941|ussr|soviet/] },
+    { t: 'Japan occupied southern Indochina (July 1941)', p: 5, m: [/indochina|indo.?china|july 1941/] },
+    { t: 'The US froze Japanese assets and the ABCD powers embargoed oil', p: 5, m: [/freez|froze|embargo|\babcd\b/] },
+    { t: 'Japan imported 80% of its oil from the USA', p: 5, m: [/\b80\b|\boil\b/] },
+    { t: 'The Hull Note (26 November 1941) demanded withdrawal from China', p: 5, m: [/hull|26 november/] },
+    { t: 'The navy\'s oil would run out within months', p: 3, m: [/run out|months|stocks|resources/] },
+    { t: 'Germany\'s victories made European colonies look easy to take', p: 3, m: [/german (success|victor)|barbarossa|colonies|dutch east indies|malaya/] },
+    { t: 'A surprise strike to knock out the US Pacific Fleet', p: 3, m: [/pacific fleet|knock out|surprise|cripple/] },
+  ]},
+  { id: 'jwin', short: 'Japan\'s early WW2 success', q: 'Why was Japan so successful in 1941–42?', a: [
+    { t: 'The surprise attack on Pearl Harbour (7 December 1941)', p: 5, m: [/pearl harbou?r|7 december|surprise/] },
+    { t: 'Zero fighters outclassed Allied planes', p: 5, m: [/\bzeros?\b|zeroes|aircraft/] },
+    { t: 'Experience from fighting in China since 1937', p: 3, m: [/\bchina\b|1937|experien/] },
+    { t: 'Skill at jungle warfare (Malaya, Singapore)', p: 3, m: [/jungle|terrain/] },
+    { t: 'Singapore fell (February 1942) despite a British army twice as large', p: 5, m: [/singapore|february 1942|twice/] },
+    { t: 'Hong Kong fell in 13 days (December 1941)', p: 5, m: [/hong ?kong|\b13 days/] },
+    { t: 'The Dutch East Indies (March 1942): 98,000 surrendered', p: 5, m: [/dutch east indies|98 ?000|indonesia|march 1942/] },
+    { t: 'The Philippines and Burma were taken (May 1942)', p: 5, m: [/philippines|burma|may 1942/] },
+    { t: 'European powers were stretched by the war in Europe', p: 3, m: [/europe|distract|preoccupied|colonial powers/] },
+    { t: 'The USA was unprepared and isolationist', p: 3, m: [/unprepared|isolation/] },
+    { t: 'The National Mobilisation Law (1938) gave total control of society', p: 5, m: [/mobili[sz]ation law|1938|total (war|control)/] },
+    { t: '75% of the 1937 budget went on the military', p: 5, m: [/\b75\b|budget/] },
+    { t: 'Ultranationalist ideology: Kokutai no Hongi and "the Way of Subjects"', p: 5, m: [/kokutai|shinmin|way of (the )?subjects|ultra.?national|bushido/] },
+    { t: 'Tojo\'s military government drove total mobilisation', p: 3, m: [/tojo|militar/] },
+  ]},
+  { id: 'jlose', short: 'Japan\'s defeat 1942–45', q: 'Why was Japan defeated in the Pacific War?', a: [
+    { t: 'The Battle of Midway (June 1942): Japan lost 4 carriers', p: 5, m: [/midway|june 1942|(4|four) (aircraft )?carriers/] },
+    { t: 'Pearl Harbour missed the oil tanks, repair yards and carriers', p: 5, m: [/missed|oil (tanks|reserves?)|repair|carriers (were )?(away|absent)/] },
+    { t: 'US industry vastly outproduced Japan', p: 5, m: [/industr|outproduc|production|factor|ford|chrysler/] },
+    { t: 'US submarines sank Japan\'s merchant fleet', p: 5, m: [/submarines?|merchant (fleet|ships)|shipping/] },
+    { t: 'Oil shortages grounded the navy and air force (1943)', p: 5, m: [/\boil\b|fuel/] },
+    { t: 'Japan was overstretched across Asia and the Pacific', p: 3, m: [/overstretch|stretched|spread (too )?thin|too (far|much)/] },
+    { t: 'The war in China tied down huge forces', p: 3, m: [/\bchina\b/] },
+    { t: 'Island hopping by Nimitz and MacArthur', p: 5, m: [/island.?hopping|nimitz|macarthur/] },
+    { t: 'Iwo Jima and Okinawa (1945) put bases within reach of Japan', p: 5, m: [/iwo ?jima|okinawa/] },
+    { t: 'The Battle of Leyte Gulf (October 1944) destroyed the navy', p: 5, m: [/leyte/] },
+    { t: 'The firebombing of Tokyo (March 1945)', p: 5, m: [/tokyo|firebomb|\bb ?29/] },
+    { t: 'Atomic bombs on Hiroshima and Nagasaki (August 1945)', p: 5, m: [/atomic|hiroshima|nagasaki|nuclear/] },
+    { t: 'The USSR declared war (August 1945)', p: 5, m: [/soviet|ussr|stalin|august 1945/] },
+    { t: 'Japan failed to adopt radar and sonar', p: 5, m: [/radar|sonar|asdic/] },
+    { t: 'Zeros were overtaken by newer US planes', p: 3, m: [/\bzeros?\b|zeroes|hellcat|mustang|p ?51|planes/] },
+    { t: 'Kamikaze attacks could not stop the US advance', p: 3, m: [/kamikaze/] },
   ]},
 ];
 /* ---------- Historians (IB): name + argument = 8 points ---------- */
-const HN = { hsu: '\\bhsu\\b|immanuel', gray: '\\bgr[ae]y\\b', spence: 'spence', fairbank: 'fairbank', sheridan: 'sheridan', fenby: 'fenby', kayloe: 'kayloe', damon: 'damon', gck: 'grasso|corrin|kort', reisch: 'reischauer', vlad: 'vladimirov' };
-const HIST_RE = /\b(hsu|immanuel|gray|grey|spence|fairbank|sheridan|fenby|kayloe|damon|grasso|corrin|kort|reischauer|vladimirov)\b/;
+const HN = { hsu: '\\bhsu\\b|immanuel', gray: '\\bgr[ae]y\\b', spence: 'spence', fairbank: 'fairbank', sheridan: 'sheridan', fenby: 'fenby', kayloe: 'kayloe', damon: 'damon', gck: 'grasso|corrin|kort', reisch: 'reischauer', vlad: 'vladimirov' , pyle: 'pyle', storry: 'storry', craig: 'craig', hastings: 'hastings', seth: 'seth', mitter: 'mitter', jansen: 'jansen', cumings: 'cumings', duus: 'duus', hane: 'hane', keegan: 'keegan', overy: 'overy', hannerman: 'hann?erman|hanneman', henshall: 'henshall', paine: 'paine', toland: 'toland', iriye: 'iriye', hotta: 'hotta', kyung: 'kyung', choe: 'choe', cameron: 'cameron', vlastos: 'vlastos', gordon: 'gordon', evans: 'evans'};
+const HIST_RE = /\b(hsu|immanuel|gray|grey|spence|fairbank|sheridan|fenby|kayloe|damon|grasso|corrin|kort|reischauer|vladimirov|pyle|storry|craig|hastings|seth|mitter|jansen|cumings|duus|hane|keegan|overy|hannerman|hanerman|hanneman|henshall|paine|toland|iriye|hotta|kyung|choe|cameron|vlastos|gordon|evans)\b/;
 const H = (who, idea, t) => ({ t, p: 8, h: true, m: [all(HN[who], idea)] });
 const IB_EXTRA = {
   ss: [
@@ -1188,9 +1544,64 @@ const IB_EXTRA = {
     H('sheridan', 'callous|peasant', 'Sheridan: the GMD elite treated peasants with "incredible callousness"'),
     H('vlad', 'rectification|cruel|coercion|purification', 'Vladimirov: Mao\'s "moral purification" was cruel psychological coercion'),
   ],
+  tokugawa: [
+    H('pyle', 'unravel|authority|bakufu', 'Pyle: Perry\'s arrival began the unravelling of Bakufu authority'),
+    H('vlastos', 'wealthy|village|moneylend|not political', 'Vlastos: peasant protests targeted rich villagers and moneylenders, not the regime'),
+  ],
+  meiji: [
+    H('pyle', 'education|social advancement', 'Pyle: education became the prime mechanism for social advancement'),
+    H('gordon', 'top.?down|sub.?elite', 'Gordon: the Meiji Restoration was a top-down revolution by sub-elites'),
+    H('jansen', 'surface|tradition|graft', 'Jansen: the Restoration was partly surface-level, grafting Western institutions onto tradition'),
+    H('henshall', 'world power|parity|50 years|minor', 'Henshall: in 50 years Japan rose from a minor Asian power to a world power'),
+  ],
+  jexpand: [
+    H('pyle', 'anglo|alliance|diplomatic', 'Pyle: the Anglo-Japanese Alliance was Japan\'s most significant diplomatic achievement'),
+    H('seth', 'korea|fate|sealed', 'Seth: Japan\'s victories over China and Russia sealed Korea\'s fate'),
+    H('mitter', 'hegemon|regional', 'Mitter: Japan became the new regional hegemon'),
+  ],
+  korea76: [
+    H('cumings', 'external|fate|forces', 'Cumings: Korea\'s fate was driven more by external forces than internal politics'),
+    H('kyung', 'west|hostil|dependen', 'Kyung: Korea\'s hostility to the West and dependence on foreign powers shaped its fate'),
+    H('choe', 'gapsin|setback', 'Choe: the Gapsin Coup set back Korea\'s reforms'),
+    H('seth', 'china|obstruct|modernis', 'Seth: China obstructed Korea\'s ability to modernise'),
+  ],
+  annex: [
+    H('duus', 'strateg|necessity', 'Duus: annexation was driven more by strategic necessity than ideology'),
+    H('pyle', 'comfortable|imperial power', 'Pyle: Japan grew comfortable with its new imperial power'),
+  ],
+  taisho: [
+    H('pyle', 'tenuous|sovereign|impossible|disunity|ambivalen', 'Pyle: party power was tenuous in a state dedicated to imperial sovereignty'),
+    H('cameron', 'party|established|parties', 'Cameron: the principle of party government was firmly established'),
+    H('reisch', 'intellectual|alienat|progressive', 'Reischauer and Craig: progressive intellectuals were alienated from the main parties'),
+  ],
+  manchuria: [
+    H('craig', 'export|50', 'Craig: Japanese exports fell by 50% in 1929-31'),
+    H('pyle', 'idealistic|shidehara', 'Pyle: Shidehara diplomacy was too idealistic'),
+    H('hannerman', 'turning point|isolation', 'Hannerman: the Manchurian Incident was a turning point towards isolation'),
+  ],
+  pearl: [
+    H('storry', 'assertive|army|military', 'Storry: the dominant theme of 1930s Japan was the ever-increasing power of the army'),
+    H('jansen', 'greatness|generations|forebod|acquiesc', 'Jansen: giving in to US demands would have undone generations of striving for national greatness'),
+  ],
+  jwin: [
+    H('craig', 'brilliant|tactical|psychological', 'Craig: Pearl Harbour was a brilliant tactical victory but a disastrous psychological error'),
+    H('hastings', 'complacen|allied', 'Hastings: Allied complacency left South-East Asia vulnerable'),
+    H('iriye', 'crumbling|european|imperial order', 'Iriye: Japan\'s success came amid a crumbling European imperial order'),
+    H('evans', 'naval air|doctrine|ahead', 'Evans: Japan\'s naval air power doctrine was ahead of its time'),
+    H('toland', 'brilliance|daring|planning', 'Toland: Japan showed daring brilliance in planning Pearl Harbour and its rapid strikes'),
+  ],
+  jlose: [
+    H('hane', 'war economy|organis', 'Hane: Japan failed to grasp the importance of an organised war economy'),
+    H('keegan', 'midway|decisive', 'Keegan: Midway was the most decisive blow in the history of naval warfare'),
+    H('paine', 'overstretch|stretched|resource', 'Paine: a self-destructive resource grab stretched Japan too thin'),
+    H('hastings', 'atomic|bomb', 'Hastings: the atomic bomb ended the war'),
+    H('overy', 'atomic|accelerat|surrender', 'Overy: the atomic bombs only sped up a victory already won'),
+    H('hotta', 'overconfiden|resilien', 'Hotta: overconfidence blinded Japan\'s leaders to US resilience'),
+    H('storry', 'technolog|misjudg', 'Storry: technological misjudgements were key to Japan\'s defeat'),
+  ],
 };
 IB_TOPICS.forEach(tp => { if (IB_EXTRA[tp.id]) tp.a.push(...IB_EXTRA[tp.id]); });
-IB_TOPICS.push({ id: 'hist', short: 'Historians\' views', q: 'Historiography: name a historian and their argument about China 1861–1949.',
+IB_TOPICS.push({ id: 'hist', short: 'Historians\' views', q: 'Historiography: name a historian and their argument about China, Japan or Korea.',
   a: IB_TOPICS.flatMap(tp => tp.a.filter(a => a.h)).map(a => ({ ...a })) });
 
 /* ---------- Niche tier: obscure details score 8 ---------- */
@@ -1207,6 +1618,7 @@ const NICHE = [
   '45 cities', 'Prince\'s Cabinet', '9-year wait', 'New Army units', '269 of 596', 'Constitutional Compact', 'Duan Qirui', '735 customs', 'Nishihara',
   'Dogmeat', '3% to 20%', 'Cao Rulin', 'Baihua', 'Karakhan', 'Green Gang (Du', 'Zhongshan Incident', 'Western Hills', '37.5%', 'December 9th',
   'Blue Shirts', 'Otto Braun', 'Zunyi', 'blockhouses', 'Dixie', 'three-thirds', 'Henan famine', 'Ch$1.9bn',
+  'Lady Hughes', 'Macartney', 'Tongwen Guan', 'Steam Navigation', 'Huangqiao', 'Bezobrazov', 'Alexeev', 'Suez Canal', 'Minobe', 'Itagaki', 'Unyo', 'General Sherman', 'Gyeongbokgung', 'Kuroda', 'Panay', 'Hull Note', '725,000', 'Ii Naosuke', 'Weng Tonghe',
 ];
 const nicheMissing = NICHE.filter(k => {
   const hits = [...GCSE_TOPICS, ...IB_TOPICS].flatMap(tp => tp.a).filter(a => a.t.includes(k));
@@ -1245,7 +1657,25 @@ const QV = {
   nanjing: ['How successful was the Nanjing Decade?', 'Name a success or failure of Jiang\'s rule (1927–37).', 'Was the Nanjing Decade a success? Give evidence.'],
   ccp27: ['How did the CCP survive 1927–36?', 'Give evidence about the Jiangxi Soviet, Long March or Xi\'an Incident.', 'Why wasn\'t the CCP destroyed by Jiang?'],
   war: ['How did the war with Japan help the CCP or hurt the GMD?', 'Give evidence that 1937–45 helped the CCP or hurt the GMD.', 'Yan\'an or Chongqing: give evidence from 1937–45.'],
-  hist: ['Name a historian and their argument (China 1861–1949).', 'Historiography: who argued what?', 'Give a historian\'s view on any China topic.'],
+  opium: ['Why did China lose the Opium Wars?', 'Give a term of the Treaty of Nanjing (1842).', 'What caused the Opium Wars, or what did they cost China?'],
+  taiping: ['Why did the Taiping Rebellion break out?', 'How did the Taiping Rebellion weaken the Qing?', 'Give a cause or result of the mid-century rebellions.'],
+  ssfeat: ['Name an achievement of Self-Strengthening.', 'What did Li Hongzhang and Zeng Guofan build?', 'Give evidence that Self-Strengthening modernised China.'],
+  qingref: ['Name one of the late Qing reforms (1901–11).', 'Why did the Qing reforms fail to save the dynasty?', 'How did the 1901–11 reforms backfire on the Qing?'],
+  northexp: ['Why did the Northern Expedition succeed?', 'Give evidence about the Northern Expedition (1926–28).', 'How did Jiang defeat the warlords?'],
+  uf2: ['Why did the Second United Front fail?', 'Give evidence that the GMD and CCP never truly cooperated (1937–41).', 'What ended the Second United Front?'],
+  tokugawa: ['Why did the Tokugawa shogunate fall?', 'Give a cause of the Meiji Restoration (1868).', 'How did Perry\'s arrival weaken the shogun?'],
+  meiji: ['Name a Meiji reform.', 'How did Japan modernise after 1868?', 'Give evidence of Meiji military, economic or social change.'],
+  meijicon: ['Why was the Meiji Constitution introduced?', 'How democratic was the Meiji Constitution?', 'Give a feature of the 1889 Constitution.'],
+  korea76: ['Why was Korea opened up in 1876?', 'Give a consequence of the Treaty of Ganghwa.', 'Why was Korea vulnerable to foreign powers?'],
+  jexpand: ['How did Japan become a great power by 1910?', 'Give evidence of Japan\'s rise between 1894 and 1910.', 'How did the wars of 1894–1905 change Japan\'s position?'],
+  rjw: ['Why did Japan win the Russo-Japanese War?', 'Give a reason Russia lost in 1904–05.', 'Give evidence about the Russo-Japanese War.'],
+  annex: ['Why did Japan annex Korea in 1910?', 'Give evidence about Japanese rule in Korea.', 'How did Japan take control of Korea (1905–10)?'],
+  taisho: ['Why did democracy grow in Taisho Japan?', 'Give a limit of Japanese democracy in the 1920s.', 'Give evidence about Taisho democracy.'],
+  manchuria: ['Why did Japan invade Manchuria in 1931?', 'Give a cause of the Mukden Incident.', 'How did the Depression push Japan into Manchuria?'],
+  pearl: ['Why did Japan attack Pearl Harbour?', 'Give a step on the road to war with the USA (1931–41).', 'How did US pressure push Japan to war?'],
+  jwin: ['Why was Japan so successful in 1941–42?', 'Give a reason Japan conquered South-East Asia so fast.', 'Why did Western colonies fall to Japan in 1941–42?'],
+  jlose: ['Why was Japan defeated in the Pacific War?', 'Give a reason the USA beat Japan.', 'What turned the Pacific War against Japan?'],
+  hist: ['Name a historian and their argument (China, Japan or Korea).', 'Historiography: who argued what?', 'Give a historian\'s view on any topic in this course.'],
 };
 const lastQ = {};
 function pickQuestion(tp) {
@@ -1264,8 +1694,19 @@ function addPoints(pl, n) {
 }
 
 const COURSES = {
-  gcse: { topics: GCSE_TOPICS, label: 'IGCSE China · Deng Xiaoping 1976–89', eg: '"Why did Deng rise to power?"' },
-  ib: { topics: IB_TOPICS, label: 'IB HL History · China 1861–1949', eg: '"Why did the Hundred Days\' Reform fail?"' },
+  gcse: { topics: GCSE_TOPICS, label: 'IGCSE China · Deng Xiaoping 1976–89', eg: '"Why did Deng rise to power?"', groups: [
+    ['Gang of Four & Deng\'s rise', ['g4rise', 'g4fall', 'rise']],
+    ['The economy', ['need', 'agri', 'open']],
+    ['One Child Policy', ['ocp', 'ocpfx']],
+    ['Politics & protest', ['polit', 'demo', 'unrest', 'tian']],
+  ] },
+  ib: { topics: IB_TOPICS, label: 'IB HL History · China, Japan & Korea 1839–1949', eg: '"Why did the Hundred Days\' Reform fail?"', groups: [
+    ['China 1839–1912', ['opium', 'taiping', 'ss', 'ssfeat', 'sjw', 'after95', 'hundred', 'boxcause', 'boxresult', 'qingref', 'xinhai']],
+    ['China 1912–49', ['yuan', 'warlords', 'may4', 'uf1', 'northexp', 'nanjing', 'ccp27', 'war', 'uf2']],
+    ['Japan 1853–1945', ['tokugawa', 'meiji', 'meijicon', 'jexpand', 'rjw', 'taisho', 'manchuria', 'pearl', 'jwin', 'jlose']],
+    ['Korea 1866–1910', ['korea76', 'annex']],
+    ['Historiography', ['hist']],
+  ] },
 };
 let course = 'gcse';
 let TOPICS = GCSE_TOPICS;
@@ -1349,6 +1790,23 @@ function drawPlayers() {
 $('#playerList').addEventListener('input', e => { if (e.target.dataset.i != null) names[+e.target.dataset.i] = e.target.value; });
 $('#playerList').addEventListener('click', e => { const i = e.target.dataset.rm; if (i != null && names.length > 2) { names.splice(+i, 1); drawPlayers(); } });
 $('#addPlayer').onclick = () => { names.push('Player ' + (names.length + 1)); drawPlayers(); $('#pname' + (names.length - 1)).select(); };
+function countTopics() {
+  document.querySelectorAll('#topicList .tgroup').forEach(g => {
+    const boxes = g.querySelectorAll('input'), on = [...boxes].filter(b => b.checked).length;
+    g.querySelector('.tg-count').textContent = `${on}/${boxes.length}`;
+  });
+  const all = document.querySelectorAll('#topicList input'), on = [...all].filter(b => b.checked).length;
+  $('#topicsTotal').textContent = `${on} of ${all.length} topics`;
+}
+$('#topicList').addEventListener('change', countTopics);
+$('#topicsPanel').addEventListener('click', e => {
+  const b = e.target.closest('[data-pick]');
+  if (!b) return;
+  const scope = b.closest('.tgroup') || $('#topicList');
+  scope.querySelectorAll('input').forEach(i => i.checked = b.dataset.pick === '1');
+  countTopics();
+});
+
 function setCourse(c) {
   course = COURSES[c] ? c : 'gcse';
   const cfg = COURSES[course];
@@ -1356,9 +1814,17 @@ function setCourse(c) {
   const saved = store.get('topics_' + course, null) || (course === 'gcse' ? store.get('topics', null) : null);
   chosen = (saved || TOPICS.map(t => t.id)).filter(id => TOPICS.some(t => t.id === id));
   if (!chosen.length) chosen = TOPICS.map(t => t.id);
-  $('#topicList').innerHTML = TOPICS.map(t => `
-    <label class="chk"><input type="checkbox" id="tp_${t.id}" value="${t.id}" ${chosen.includes(t.id) ? 'checked' : ''}>
-    <span>${esc(t.short)}<small>${t.a.length} pieces of evidence</small></span></label>`).join('');
+  const grouped = new Set(cfg.groups.flatMap(g => g[1]));
+  const groups = cfg.groups.concat([['Other', TOPICS.filter(t => !grouped.has(t.id)).map(t => t.id)]]).filter(g => g[1].length);
+  $('#topicList').innerHTML = groups.map(([name, ids], gi) => `
+    <div class="tgroup" data-g="${gi}">
+      <div class="tg-head"><h3>${esc(name)}</h3><span class="tg-count"></span>
+        <button class="tg-btn" type="button" data-pick="1">All</button><button class="tg-btn" type="button" data-pick="0">None</button></div>
+      <div class="topics">${ids.map(id => TOPICS.find(t => t.id === id)).filter(Boolean).map(t => `
+        <label class="chk"><input type="checkbox" id="tp_${t.id}" value="${t.id}" ${chosen.includes(t.id) ? 'checked' : ''}>
+        <span>${esc(t.short)}<small>${t.a.length} answers</small></span></label>`).join('')}</div>
+    </div>`).join('');
+  countTopics();
   $('#courseLabel').textContent = cfg.label;
   $('#ruleEg').textContent = cfg.eg;
   $('#pkIb').hidden = course !== 'ib';
@@ -1515,7 +1981,7 @@ function drawBubbles() {
 function renderSetup() {
   const on = mode === 'online', canRun = !on || NET.host;
   $('#modePanel').hidden = NET.on;
-  $('#playersPanel').hidden = on;
+  $('#playersPanel').hidden = on || mode === 'solo';
   $('#onlinePanel').hidden = !on;
   $('#roomEntry').hidden = NET.on;
   $('#roomInfo').hidden = !NET.on;
@@ -1577,6 +2043,8 @@ function startGame() {
   if (NET.on) {
     if (NET.roster.length < 2) { $('#setupMsg').textContent = 'You need at least two people in the room.'; return; }
     players = NET.roster.slice(0, 8).map(p => ({ name: p.name, cid: p.cid }));
+  } else if (mode === 'solo') {
+    players = [{ name: 'You', cid: '' }];
   } else {
     const ps = names.map(n => n.trim()).filter(Boolean);
     if (ps.length < 2) { $('#setupMsg').textContent = 'You need at least two players.'; return; }
@@ -1590,7 +2058,7 @@ function startGame() {
   S = {
     gid: uid(), players: players.map(p => ({ ...p, lives: 3, score: 0, bank: 0 })),
     current: 0, fuse: FUSE[fuse], queue: [], topic: null, used: new Map(), custom: [], pending: null,
-    round: 0, phase: 'play', fuseEnd: 0, lastLoser: -1, totalSaid: 0, evn: 0, ev: null,
+    round: 0, phase: 'play', fuseEnd: 0, lastLoser: -1, totalSaid: 0, evn: 0, ev: null, solo: players.length === 1,
   };
   startRound();
 }
@@ -1683,7 +2151,7 @@ function renderAll() {
       <span class="lifebar" title="Points towards the next life"><i style="width:${p.lives >= MAX_LIVES ? 100 : Math.round((p.bank || 0) / LIFE_EVERY * 100)}%"></i></span>
     </div>`;
   }).join('');
-  $('#holder').innerHTML = `<span class="comrade">★ Comrade ★</span>${NET.on && myTurn ? '<em>You</em> are' : `<em>${esc(h.name)}</em> is`} holding the croissant`;
+  $('#holder').innerHTML = `<span class="comrade">★ Comrade ★</span>${(NET.on && myTurn) || S.solo ? '<em>You</em> are' :`<em>${esc(h.name)}</em> is`} holding the croissant`;
   const chips = [];
   S.used.forEach((who, id) => { const a = S.topic.a.find(x => x.id === id); if (a) chips.push(`<span class="fchip"><b>+${a.p}</b>${esc(a.t)} <i>${esc(who)}</i></span>`); });
   S.custom.forEach(c => chips.push(`<span class="fchip"><b>+1</b>${esc(c.text)} <i>${esc(c.who)} · counted</i></span>`));
@@ -1864,7 +2332,7 @@ function feedbackView(ev) {
     feedback(`<span class="bad">${by}Already said by ${esc(ev.by)}: "${esc(ev.text)}".${mine ? ' Try something else!' : ''}</span>`);
   } else if (ev.type === 'miss') {
     if (mine) { snd.bad(); nudge(); }
-    const canCount = !NET.on || (!mine && S.players.some(p => p.cid === ME));
+    const canCount = !S.solo && (!NET.on || (!mine && S.players.some(p => p.cid === ME)));
     const msg = !NET.on ? 'That\'s not in the evidence bank.'
       : mine ? 'That\'s not in the evidence bank. Someone else can count it if it\'s fair.'
       : `${esc(ev.who)} said "${esc(ev.text)}". It's not in the evidence bank.`;
@@ -1945,7 +2413,7 @@ function showReveal() {
     return `<li class="${who ? '' : 'miss'}"><span class="p">${a.h ? 'H ' : a.n ? '★ ' : ''}+${a.p}</span><span>${esc(a.t)}</span><span class="who">${who ? esc(who) : 'missed'}</span></li>`;
   }).join('') + S.custom.map(c => `<li><span class="p">+1</span><span>${esc(c.text)}</span><span class="who">${esc(c.who)}</span></li>`).join('');
   const ref = isReferee();
-  $('#nextBtn').textContent = alive().length <= 1 ? 'See the winner' : 'Next round';
+  $('#nextBtn').textContent = gameDone() ? (S.solo ? 'See your score' : 'See the winner') : 'Next round';
   $('#nextBtn').hidden = !ref;
   $('#revealWait').hidden = ref;
   $('#reveal').hidden = false;
@@ -1954,19 +2422,27 @@ function showReveal() {
 
 $('#nextBtn').onclick = () => {
   if (!S || S.phase !== 'boom' || !isReferee()) return;
-  if (alive().length <= 1) { S.phase = 'over'; emit({ type: 'over' }); return; }
+  if (gameDone()) { S.phase = 'over'; emit({ type: 'over' }); return; }
   S.current = nextAlive(S.lastLoser); // whoever it blew up on is skipped
   startRound();
 };
+
+// Solo ends when you run out of lives; otherwise when one player is left.
+const gameDone = () => S.solo ? alive().length === 0 : alive().length <= 1;
 
 function overView() {
   cancelAnimationFrame(raf);
   $('#reveal').hidden = true;
   const w = alive()[0];
   $('#overTitle').textContent = w ? `${w.name}: Model Worker of the Bakery!` : 'Everyone got flaked';
+  if (S.solo) {
+    const score = S.players[0].score, key = 'best_' + course, best = store.get(key, 0);
+    if (score > best) store.set(key, score);
+    $('#overTitle').textContent = score > best ? `New personal best: ${score} points!` : `Game over: ${score} points`;
+  }
   const ranked = S.players.slice().sort((a, b) => (b.lives > 0) - (a.lives > 0) || b.score - a.score);
   $('#rank').innerHTML = ranked.map(p => `<div><span>${esc(p.name)}${p.lives > 0 ? ' · last one standing' : ''}</span><span>${p.score} pts</span></div>`).join('');
-  $('#overStats').textContent = `${S.round} rounds · ${S.totalSaid} pieces of evidence given`;
+  $('#overStats').textContent = `${S.round} round${S.round === 1 ? '' : 's'} · ${S.totalSaid} piece${S.totalSaid === 1 ? '' : 's'} of evidence given` + (S.solo ? ` · personal best ${store.get('best_' + course, 0)} (${COURSES[course].label.split(' · ')[0]})` : '');
   const ref = isReferee();
   $('#againBtn').hidden = !ref;
   $('#overWait').hidden = ref;
