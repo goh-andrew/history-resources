@@ -1955,8 +1955,7 @@ function showReveal() {
 $('#nextBtn').onclick = () => {
   if (!S || S.phase !== 'boom' || !isReferee()) return;
   if (alive().length <= 1) { S.phase = 'over'; emit({ type: 'over' }); return; }
-  const l = S.players[S.lastLoser];
-  S.current = l.lives > 0 && here(l) ? S.lastLoser : nextAlive(S.lastLoser);
+  S.current = nextAlive(S.lastLoser); // whoever it blew up on is skipped
   startRound();
 };
 
